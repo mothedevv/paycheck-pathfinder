@@ -266,11 +266,17 @@ export default function Payday() {
                 Your bills and savings should sit in a high-yield account. Stop losing money.
               </p>
             </div>
-            <Button variant="ghost" size="icon" className="text-amber-400 hover:bg-amber-500/10 flex-shrink-0">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-              </svg>
-            </Button>
+            <a 
+              href="https://www.bestonlinebankingaccounts.com/savings-accounts?utm_source=google&kw=hysa&sk=hysa&c=763954045116&t=search&p=&m=p&dev=c&network=g&campaignid=22797476600&devmod=&mobval=0&groupid=189346055744&targetid=kwd-397654877469&interest=&physical=9198656&feedid=&eid=&a=&topic=Savings&ctype=&camtype=ps&ts=hysa&tt=&niche=&exp=&pq=&dyn=&gad_source=1&gad_campaignid=22797476600&gbraid=0AAAAAqqwASYuy2_JU3rVpRtQfW7bDfl-7&gclid=Cj0KCQiA6sjKBhCSARIsAJvYcpPdluODXr8UXz4TwHsJmMJSTkUHPFaIHzckxvmq5GYomCwRrqJlDWsaApVBEALw_wcB"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Button variant="ghost" size="icon" className="text-amber-400 hover:bg-amber-500/10 flex-shrink-0">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+              </Button>
+            </a>
           </div>
         )}
 
