@@ -15,6 +15,7 @@ export default function OnboardingFlow({ onComplete }) {
     is_primary: true
   }]);
   const [totalBills, setTotalBills] = useState('');
+  const [totalDebtPayments, setTotalDebtPayments] = useState('');
   const [loading, setLoading] = useState(false);
 
   const addIncome = () => {
@@ -49,9 +50,13 @@ export default function OnboardingFlow({ onComplete }) {
     }
   };
 
-  const handleComplete = async () => {
-    if (!totalBills || parseFloat(totalBills) <= 0) return;
+  const handleNextStep2 = () => {
+    if (totalBills && parseFloat(totalBills) > 0) {
+      setStep(3);
+    }
+  };
 
+  const handleComplete = async () => {
     setLoading(true);
     try {
       // Calculate total monthly income based on all income sources
@@ -265,16 +270,64 @@ export default function OnboardingFlow({ onComplete }) {
                   Back
                 </Button>
                 <Button
-                  onClick={handleComplete}
-                  disabled={loading || !totalBills || parseFloat(totalBills) <= 0}
+                  onClick={handleNextStep2}
+                  disabled={!totalBills || parseFloat(totalBills) <= 0}
                   className="flex-1 bg-lime-600 hover:bg-lime-500 text-black font-bold h-12 text-base"
                 >
-                  {loading ? 'Setting up...' : 'Next: Add Debt →'}
+                  Next: Add Debt →
                 </Button>
               </div>
             </div>
           </>
-        )}
+        ) : step === 3 ? (
+          <>
+            {/* Step 3: Debt Payments */}
+            <div className="text-center mb-8">
+              <h1 className="text-3xl sm:text-4xl font-black mb-3">
+                What About Debt?
+              </h1>
+              <p className="text-gray-400 text-sm sm:text-base">
+                What are your total minimum payments per month?
+              </p>
+            </div>
+
+            <div className="bg-[#1a1a2e] border border-white/10 rounded-2xl p-4 sm:p-6">
+              <div className="mb-6">
+                <label className="text-sm text-gray-400 mb-2 block">Total Minimum Payments (Monthly)</label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg">$</span>
+                  <Input
+                    type="number"
+                    value={totalDebtPayments}
+                    onChange={(e) => setTotalDebtPayments(e.target.value)}
+                    placeholder="500"
+                    className="pl-10 bg-[#252538] border-white/10 text-white text-lg h-14"
+                  />
+                </div>
+                <p className="text-xs text-gray-400 mt-2">
+                  Enter 0 if you're debt-free (lucky you!). You can add individual accounts later on the Debt page.
+                </p>
+              </div>
+
+              <div className="flex gap-3">
+                <Button
+                  onClick={() => setStep(2)}
+                  variant="outline"
+                  className="border-white/20 text-white hover:bg-white/10 h-12"
+                >
+                  Back
+                </Button>
+                <Button
+                  onClick={handleComplete}
+                  disabled={loading || totalDebtPayments === ''}
+                  className="flex-1 bg-lime-600 hover:bg-lime-500 text-black font-bold h-12 text-base"
+                >
+                  {loading ? 'Setting up...' : 'Finish Setup →'}
+                </Button>
+              </div>
+            </div>
+          </>
+        ) : null}
       </div>
     </div>
   );
