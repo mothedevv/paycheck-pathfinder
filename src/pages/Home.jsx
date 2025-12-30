@@ -91,10 +91,53 @@ export default function Home() {
   const currentSavings = savingsGoals.reduce((sum, g) => sum + (g.current_amount || 0), 0);
   const savingsProgress = totalSavingsGoals > 0 ? Math.round((currentSavings / totalSavingsGoals) * 100) : 0;
 
-  // Split debts by type
-  const creditCardDebt = debts.filter(d => d.type === 'credit_card').reduce((sum, d) => sum + (d.balance || 0), 0);
-  const personalLoansDebt = debts.filter(d => ['personal_loan', 'student_loan', 'medical', 'other'].includes(d.type)).reduce((sum, d) => sum + (d.balance || 0), 0);
-  const assetDebt = debts.filter(d => ['mortgage', 'car_loan'].includes(d.type)).reduce((sum, d) => sum + (d.balance || 0), 0);
+  // Split debts by type (only show if balance > 0)
+  const debtCategories = [
+    { 
+      type: 'credit_card', 
+      label: 'Credit Cards',
+      amount: debts.filter(d => d.type === 'credit_card').reduce((sum, d) => sum + (d.balance || 0), 0),
+      color: 'purple',
+      icon: 'credit-card'
+    },
+    { 
+      type: 'student_loan', 
+      label: 'Student Loans',
+      amount: debts.filter(d => d.type === 'student_loan').reduce((sum, d) => sum + (d.balance || 0), 0),
+      color: 'blue',
+      icon: 'graduation'
+    },
+    { 
+      type: 'car_loan', 
+      label: 'Auto Loans',
+      amount: debts.filter(d => d.type === 'car_loan').reduce((sum, d) => sum + (d.balance || 0), 0),
+      color: 'cyan',
+      icon: 'car'
+    },
+    { 
+      type: 'personal_loan', 
+      label: 'Personal Loans',
+      amount: debts.filter(d => d.type === 'personal_loan').reduce((sum, d) => sum + (d.balance || 0), 0),
+      color: 'orange',
+      icon: 'document'
+    },
+    { 
+      type: 'mortgage', 
+      label: 'Mortgages',
+      amount: debts.filter(d => d.type === 'mortgage').reduce((sum, d) => sum + (d.balance || 0), 0),
+      color: 'red',
+      icon: 'home'
+    },
+    { 
+      type: 'medical', 
+      label: 'Medical Debt',
+      amount: debts.filter(d => d.type === 'medical').reduce((sum, d) => sum + (d.balance || 0), 0),
+      color: 'rose',
+      icon: 'medical'
+    }
+  ].filter(cat => cat.amount > 0);
+
+  const totalDebtAmount = debtCategories.reduce((sum, cat) => sum + cat.amount, 0);
 
   // Get next payday
   const primaryIncome = incomes.find(i => i.is_primary) || incomes[0];
@@ -233,51 +276,52 @@ export default function Home() {
             </div>
           </Link>
 
-          {/* Credit Cards */}
-          <Link to={createPageUrl('Debt')}>
-            <div className="bg-[#1a1a2e] border border-white/10 rounded-xl sm:rounded-2xl p-3 sm:p-5 hover:bg-[#252538] transition-colors cursor-pointer">
-              <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-                <div className="p-1.5 sm:p-2 rounded-lg bg-purple-500/20">
-                  <CreditCard className="text-purple-400" size={16} />
-                </div>
-                <span className="text-xs sm:text-sm text-gray-400">Credit Cards</span>
-              </div>
-              <p className="text-xl sm:text-2xl font-black mb-1">${creditCardDebt.toLocaleString()}</p>
-              <p className="text-xs text-gray-500">debt</p>
-            </div>
-          </Link>
+          {/* Dynamic Debt Categories */}
+          {debtCategories.map(category => {
+            const colorClasses = {
+              purple: { bg: 'bg-purple-500/20', text: 'text-purple-400' },
+              blue: { bg: 'bg-blue-500/20', text: 'text-blue-400' },
+              cyan: { bg: 'bg-cyan-500/20', text: 'text-cyan-400' },
+              orange: { bg: 'bg-orange-500/20', text: 'text-orange-400' },
+              red: { bg: 'bg-red-500/20', text: 'text-red-400' },
+              rose: { bg: 'bg-rose-500/20', text: 'text-rose-400' }
+            };
 
-          {/* Personal Loans */}
-          <Link to={createPageUrl('Debt')}>
-            <div className="bg-[#1a1a2e] border border-white/10 rounded-xl sm:rounded-2xl p-3 sm:p-5 hover:bg-[#252538] transition-colors cursor-pointer">
-              <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-                <div className="p-1.5 sm:p-2 rounded-lg bg-orange-500/20">
-                  <svg className="text-orange-400" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                </div>
-                <span className="text-xs sm:text-sm text-gray-400">Personal Loans</span>
-              </div>
-              <p className="text-xl sm:text-2xl font-black mb-1">${personalLoansDebt.toLocaleString()}</p>
-              <p className="text-xs text-gray-500">debt</p>
-            </div>
-          </Link>
+            const icons = {
+              'credit-card': <CreditCard className={colorClasses[category.color].text} size={16} />,
+              'graduation': <svg className={colorClasses[category.color].text} width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l9-5-9-5-9 5 9 5z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+              </svg>,
+              'car': <svg className={colorClasses[category.color].text} width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+              </svg>,
+              'document': <svg className={colorClasses[category.color].text} width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>,
+              'home': <svg className={colorClasses[category.color].text} width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+              </svg>,
+              'medical': <svg className={colorClasses[category.color].text} width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
+            };
 
-          {/* Asset Debt */}
-          <Link to={createPageUrl('Debt')}>
-            <div className="bg-[#1a1a2e] border border-white/10 rounded-xl sm:rounded-2xl p-3 sm:p-5 hover:bg-[#252538] transition-colors cursor-pointer">
-              <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-                <div className="p-1.5 sm:p-2 rounded-lg bg-red-500/20">
-                  <svg className="text-red-400" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
+            return (
+              <Link key={category.type} to={createPageUrl('Debt')}>
+                <div className="bg-[#1a1a2e] border border-white/10 rounded-xl sm:rounded-2xl p-3 sm:p-5 hover:bg-[#252538] transition-colors cursor-pointer">
+                  <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+                    <div className={`p-1.5 sm:p-2 rounded-lg ${colorClasses[category.color].bg}`}>
+                      {icons[category.icon]}
+                    </div>
+                    <span className="text-xs sm:text-sm text-gray-400">{category.label}</span>
+                  </div>
+                  <p className="text-xl sm:text-2xl font-black mb-1">${category.amount.toLocaleString()}</p>
+                  <p className="text-xs text-gray-500">debt</p>
                 </div>
-                <span className="text-xs sm:text-sm text-gray-400">Asset Debt</span>
-              </div>
-              <p className="text-xl sm:text-2xl font-black mb-1">${assetDebt.toLocaleString()}</p>
-              <p className="text-xs text-gray-500">mortgages & loans</p>
-            </div>
-          </Link>
+              </Link>
+            );
+          })}
 
           {/* Savings Goals */}
           <Link to={createPageUrl('Savings')}>
