@@ -5,7 +5,7 @@ export default function NetWorthCard({ totalAssets, totalDebts, netWorth, assets
   return (
     <div className="bg-white/5 border border-white/10 rounded-xl p-6">
       <h2 className="text-2xl font-bold mb-6">Net Worth Overview</h2>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <div>
           <p className="text-sm text-gray-400 mb-1">Total Assets</p>

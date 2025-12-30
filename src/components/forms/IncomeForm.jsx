@@ -36,7 +36,7 @@ export default function IncomeForm({ income, onClose, onSuccess }) {
 
   const handleDelete = async () => {
     if (!income || !confirm('Delete this income source?')) return;
-    
+
     setLoading(true);
     try {
       await base44.entities.Income.delete(income.id);
