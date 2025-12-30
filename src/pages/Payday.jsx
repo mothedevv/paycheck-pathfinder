@@ -275,7 +275,11 @@ export default function Payday() {
             <span>{payFrequency.replace('_', '-')} pay</span>
           </div>
           <h2 className="text-2xl sm:text-3xl font-black mb-2">
-            {nextPayday ? new Date(nextPayday).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }) : 'No payday set'}
+            {nextPayday ? (() => {
+              const [y, m, d] = nextPayday.split('-').map(Number);
+              const date = new Date(y, m - 1, d);
+              return date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+            })() : 'No payday set'}
           </h2>
           <p className="text-gray-400 text-xs sm:text-sm mb-2">Expected Amount</p>
           <p className="text-4xl sm:text-5xl font-black text-lime-400 mb-4 sm:mb-6">${paycheckAmount.toLocaleString()}</p>
