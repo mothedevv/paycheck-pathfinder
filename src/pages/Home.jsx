@@ -10,6 +10,7 @@ import IncomeForm from '@/components/forms/IncomeForm';
 import BillForm from '@/components/forms/BillForm';
 import DebtForm from '@/components/forms/DebtForm';
 import SavingsGoalForm from '@/components/forms/SavingsGoalForm';
+import SplashScreen from '@/components/SplashScreen';
 
 const quirkySayings = [
   "Rich people budget. Coincidence? I think not.",
@@ -183,11 +184,7 @@ export default function Home() {
   const expectedAmount = primaryIncome?.paycheck_amount || 0;
 
   if (budgetLoading) {
-    return (
-      <div className="min-h-screen bg-[#0d0d1a] flex items-center justify-center">
-        <div className="text-white">Loading...</div>
-      </div>
-    );
+    return <SplashScreen />;
   }
 
   if (!budget) {
