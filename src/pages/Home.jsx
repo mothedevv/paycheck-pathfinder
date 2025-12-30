@@ -98,44 +98,62 @@ export default function Home() {
       label: 'Credit Cards',
       amount: debts.filter(d => d.type === 'credit_card').reduce((sum, d) => sum + (d.balance || 0), 0),
       color: 'purple',
-      icon: 'credit-card'
+      icon: 'credit-card',
+      showAsPercent: false
     },
     { 
       type: 'student_loan', 
       label: 'Student Loans',
       amount: debts.filter(d => d.type === 'student_loan').reduce((sum, d) => sum + (d.balance || 0), 0),
       color: 'blue',
-      icon: 'graduation'
+      icon: 'graduation',
+      showAsPercent: false
     },
     { 
       type: 'car_loan', 
       label: 'Auto Loans',
-      amount: debts.filter(d => d.type === 'car_loan').reduce((sum, d) => sum + (d.balance || 0), 0),
+      amount: (() => {
+        const carDebts = debts.filter(d => d.type === 'car_loan' && d.balance > 0);
+        if (carDebts.length === 0) return 0;
+        const totalPaid = carDebts.reduce((sum, d) => sum + ((d.original_balance || d.balance) - d.balance), 0);
+        const totalOriginal = carDebts.reduce((sum, d) => sum + (d.original_balance || d.balance), 0);
+        return totalOriginal > 0 ? Math.round((totalPaid / totalOriginal) * 100) : 0;
+      })(),
       color: 'cyan',
-      icon: 'car'
+      icon: 'car',
+      showAsPercent: true
     },
     { 
       type: 'personal_loan', 
       label: 'Personal Loans',
       amount: debts.filter(d => d.type === 'personal_loan').reduce((sum, d) => sum + (d.balance || 0), 0),
       color: 'orange',
-      icon: 'document'
+      icon: 'document',
+      showAsPercent: false
     },
     { 
       type: 'mortgage', 
       label: 'Mortgages',
-      amount: debts.filter(d => d.type === 'mortgage').reduce((sum, d) => sum + (d.balance || 0), 0),
+      amount: (() => {
+        const mortgageDebts = debts.filter(d => d.type === 'mortgage' && d.balance > 0);
+        if (mortgageDebts.length === 0) return 0;
+        const totalPaid = mortgageDebts.reduce((sum, d) => sum + ((d.original_balance || d.balance) - d.balance), 0);
+        const totalOriginal = mortgageDebts.reduce((sum, d) => sum + (d.original_balance || d.balance), 0);
+        return totalOriginal > 0 ? Math.round((totalPaid / totalOriginal) * 100) : 0;
+      })(),
       color: 'red',
-      icon: 'home'
+      icon: 'home',
+      showAsPercent: true
     },
     { 
       type: 'medical', 
       label: 'Medical Debt',
       amount: debts.filter(d => d.type === 'medical').reduce((sum, d) => sum + (d.balance || 0), 0),
       color: 'rose',
-      icon: 'medical'
+      icon: 'medical',
+      showAsPercent: false
     }
-  ].filter(cat => cat.amount > 0);
+  ].filter(cat => cat.amount > 0 || (cat.showAsPercent && debts.some(d => d.type === cat.type && d.balance > 0)));
 
   const totalDebtAmount = debtCategories.reduce((sum, cat) => sum + cat.amount, 0);
 
@@ -319,8 +337,10 @@ export default function Home() {
                       {icons[category.icon]}
                     </div>
                     <span className="text-xs sm:text-sm text-gray-400 mb-2">{category.label}</span>
-                    <p className="text-xl sm:text-2xl font-black mb-1">${category.amount.toLocaleString()}</p>
-                    <p className="text-xs text-gray-500">debt</p>
+                    <p className="text-xl sm:text-2xl font-black mb-1">
+                      {category.showAsPercent ? `${category.amount}%` : `$${category.amount.toLocaleString()}`}
+                    </p>
+                    <p className="text-xs text-gray-500">{category.showAsPercent ? 'paid off' : 'debt'}</p>
                   </div>
                 </div>
               </Link>
