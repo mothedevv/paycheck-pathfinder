@@ -303,7 +303,7 @@ export default function Payday() {
                         {bill.is_autopay && <span className="ml-2 text-lime-400">• Auto-pay</span>}
                       </p>
                     </div>
-                    <p className="text-xl font-bold text-pink-400">${bill.amount.toLocaleString()}</p>
+                    <p className="text-xl font-bold text-pink-400">${bill.amount.toFixed(2)}</p>
                   </div>
                 </div>
               ))}

@@ -85,7 +85,7 @@ export default function Bills() {
           <div className="flex items-start justify-between mb-3 sm:mb-4">
             <div>
               <p className="text-xs sm:text-sm text-pink-200/60 uppercase tracking-wider mb-2">Total Monthly Bills</p>
-              <p className="text-3xl sm:text-5xl font-black mb-1">${totalBills.toLocaleString()}</p>
+              <p className="text-3xl sm:text-5xl font-black mb-1">${totalBills.toFixed(2)}</p>
               <p className="text-xs sm:text-sm text-pink-200/60">{bills.length} bills tracked</p>
             </div>
             <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-pink-800/40">
@@ -96,7 +96,7 @@ export default function Bills() {
           <div className="border-t border-pink-800/30 pt-3 sm:pt-4 mt-3 sm:mt-4">
             <div className="flex items-center justify-between">
               <span className="text-xs sm:text-sm text-pink-200/80">Bills Allocation ({budget?.bills_percentage || 50}%)</span>
-              <span className="text-base sm:text-lg font-bold">${billsAllocation.toLocaleString()}/mo</span>
+              <span className="text-base sm:text-lg font-bold">${billsAllocation.toFixed(2)}/mo</span>
             </div>
           </div>
         </div>
@@ -168,7 +168,7 @@ export default function Bills() {
                     </p>
                   </div>
                   <div className="text-right flex-shrink-0">
-                    <p className="text-base sm:text-lg font-bold">${bill.amount.toLocaleString()}</p>
+                    <p className="text-base sm:text-lg font-bold">${bill.amount.toFixed(2)}</p>
                     {bill.is_autopay && (
                       <p className="text-xs text-lime-400">Auto-pay</p>
                     )}

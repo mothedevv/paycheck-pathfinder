@@ -1,18 +1,18 @@
-import Home from './pages/Home';
-import Settings from './pages/Settings';
 import Bills from './pages/Bills';
 import Debt from './pages/Debt';
-import Savings from './pages/Savings';
+import Home from './pages/Home';
 import Payday from './pages/Payday';
+import Savings from './pages/Savings';
+import Settings from './pages/Settings';
 
 
 export const PAGES = {
-    "Home": Home,
-    "Settings": Settings,
     "Bills": Bills,
     "Debt": Debt,
-    "Savings": Savings,
+    "Home": Home,
     "Payday": Payday,
+    "Savings": Savings,
+    "Settings": Settings,
 }
 
 export const pagesConfig = {

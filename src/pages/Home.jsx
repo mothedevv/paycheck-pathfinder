@@ -156,7 +156,7 @@ export default function Home() {
                 </div>
                 <span className="text-xs sm:text-sm text-gray-400">Monthly Bills</span>
               </div>
-              <p className="text-xl sm:text-2xl font-black mb-1">${totalBills.toLocaleString()}</p>
+              <p className="text-xl sm:text-2xl font-black mb-1">${totalBills.toFixed(2)}</p>
               <p className="text-xs text-gray-500">{bills.length} bills</p>
             </div>
           </Link>
