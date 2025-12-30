@@ -46,11 +46,47 @@ export default function DebtForm({ debt, onClose, onSuccess }) {
         linked_asset_id: formData.linked_asset_id || undefined
       };
 
+      let debtId;
       if (debt) {
         await base44.entities.Debt.update(debt.id, dataToSubmit);
+        debtId = debt.id;
       } else {
-        await base44.entities.Debt.create(dataToSubmit);
+        const newDebt = await base44.entities.Debt.create(dataToSubmit);
+        debtId = newDebt.id;
       }
+
+      // Create or update corresponding bill if minimum payment exists
+      if (dataToSubmit.minimum_payment) {
+        const currentUser = await base44.auth.me();
+        const existingBills = await base44.entities.Bill.filter({ 
+          created_by: currentUser.email,
+          name: `${formData.name} Payment`
+        });
+
+        const today = new Date();
+        const dueDay = parseInt(formData.due_day);
+        let dueDate = new Date(today.getFullYear(), today.getMonth(), dueDay);
+        if (dueDate < today) {
+          dueDate.setMonth(dueDate.getMonth() + 1);
+        }
+        const dueDateStr = `${dueDate.getFullYear()}-${String(dueDate.getMonth() + 1).padStart(2, '0')}-${String(dueDate.getDate()).padStart(2, '0')}`;
+
+        const billData = {
+          name: `${formData.name} Payment`,
+          amount: dataToSubmit.minimum_payment,
+          due_date: dueDateStr,
+          category: 'debt_payments',
+          frequency: 'monthly',
+          notes: `Auto-generated from debt: ${formData.name}`
+        };
+
+        if (existingBills.length > 0) {
+          await base44.entities.Bill.update(existingBills[0].id, billData);
+        } else {
+          await base44.entities.Bill.create(billData);
+        }
+      }
+
       onSuccess();
     } catch (error) {
       console.error('Error saving debt:', error);
@@ -61,10 +97,20 @@ export default function DebtForm({ debt, onClose, onSuccess }) {
   };
 
   const handleDelete = async () => {
-    if (!debt || !confirm('Delete this debt?')) return;
+    if (!debt || !confirm('Delete this debt? This will also remove the associated bill payment.')) return;
 
     setLoading(true);
     try {
+      // Delete associated bill
+      const currentUser = await base44.auth.me();
+      const existingBills = await base44.entities.Bill.filter({ 
+        created_by: currentUser.email,
+        name: `${debt.name} Payment`
+      });
+      if (existingBills.length > 0) {
+        await base44.entities.Bill.delete(existingBills[0].id);
+      }
+
       await base44.entities.Debt.delete(debt.id);
       onSuccess();
     } catch (error) {
