@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Calendar, Receipt, Sparkles, Plus, CheckCircle, CreditCard, PiggyBank } from 'lucide-react';
+import { ArrowLeft, Calendar, Receipt, Sparkles, Plus, CheckCircle, CreditCard, PiggyBank, Info, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import BillForm from '@/components/forms/BillForm';
@@ -24,6 +24,7 @@ export default function Payday() {
   const [showGoalForm, setShowGoalForm] = useState(false);
   const [showDepositForm, setShowDepositForm] = useState(false);
   const [isCompleting, setIsCompleting] = useState(false);
+  const [showBucketInfo, setShowBucketInfo] = useState(false);
   
   const queryClient = useQueryClient();
 
@@ -286,6 +287,18 @@ export default function Payday() {
 
           {/* Budget Allocations */}
           <div className="space-y-2">
+            <div className="flex items-center justify-between mb-1">
+              <h3 className="text-sm font-semibold text-gray-400">Your Buckets</h3>
+              <Button
+                onClick={() => setShowBucketInfo(true)}
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 text-gray-400 hover:text-white hover:bg-white/10"
+              >
+                <Info size={16} />
+              </Button>
+            </div>
+
             {/* Bills Bucket */}
             <div className="bg-gradient-to-br from-pink-900/40 to-pink-950/30 border border-pink-500/30 rounded-lg p-3">
               <div className="flex items-center gap-3">
@@ -296,7 +309,6 @@ export default function Payday() {
                   <span className="text-pink-200 text-xs font-semibold uppercase tracking-wide block mb-0.5">Bills</span>
                   <p className="text-2xl font-black text-white">${billsAmount.toFixed(2)}</p>
                 </div>
-                <p className="text-pink-300 text-xs whitespace-nowrap">→ Transfer to HYSA</p>
               </div>
             </div>
 
@@ -310,7 +322,6 @@ export default function Payday() {
                   <span className="text-purple-200 text-xs font-semibold uppercase tracking-wide block mb-0.5">Spending</span>
                   <p className="text-2xl font-black text-white">${spendingAmount.toFixed(2)}</p>
                 </div>
-                <p className="text-purple-300 text-xs whitespace-nowrap">→ Keep in Checking</p>
               </div>
             </div>
 
@@ -324,7 +335,6 @@ export default function Payday() {
                   <span className="text-lime-200 text-xs font-semibold uppercase tracking-wide block mb-0.5">Savings</span>
                   <p className="text-2xl font-black text-white">${savingsAmount.toFixed(2)}</p>
                 </div>
-                <p className="text-lime-300 text-xs whitespace-nowrap">→ Transfer to HYSA</p>
               </div>
             </div>
           </div>
@@ -513,6 +523,59 @@ export default function Payday() {
           </div>
         </div>
       </div>
+
+      {/* Bucket Info Modal */}
+      {showBucketInfo && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+          <div className="bg-[#1a1a2e] border border-white/10 rounded-xl max-w-md w-full p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold">Where to Put Your Money</h2>
+              <Button variant="ghost" size="icon" onClick={() => setShowBucketInfo(false)}>
+                <X size={20} />
+              </Button>
+            </div>
+
+            <div className="space-y-4">
+              <div className="bg-pink-900/20 border border-pink-500/30 rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Receipt className="text-pink-400" size={18} />
+                  <h3 className="font-semibold text-pink-200">Bills Bucket</h3>
+                </div>
+                <p className="text-sm text-gray-300">
+                  Transfer to your High-Yield Savings Account (HYSA). Let it earn interest until bills are due.
+                </p>
+              </div>
+
+              <div className="bg-purple-900/20 border border-purple-500/30 rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <CreditCard className="text-purple-400" size={18} />
+                  <h3 className="font-semibold text-purple-200">Spending Bucket</h3>
+                </div>
+                <p className="text-sm text-gray-300">
+                  Keep in your checking account so you can swipe your debit card for daily expenses.
+                </p>
+              </div>
+
+              <div className="bg-lime-900/20 border border-lime-500/30 rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <PiggyBank className="text-lime-400" size={18} />
+                  <h3 className="font-semibold text-lime-200">Savings Bucket</h3>
+                </div>
+                <p className="text-sm text-gray-300">
+                  Transfer to your HYSA for debt payments and savings goals. Maximize interest earnings.
+                </p>
+              </div>
+            </div>
+
+            <Button
+              onClick={() => setShowBucketInfo(false)}
+              className="w-full mt-6 bg-lime-500 text-black font-bold hover:bg-lime-400"
+            >
+              Got it
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Forms */}
       {showBillForm && (
