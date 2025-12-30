@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Calendar, Receipt, Sparkles, Plus, CheckCircle, CreditCard, PiggyBank, Info, X } from 'lucide-react';
+import { ArrowLeft, Calendar, Receipt, Sparkles, Plus, CheckCircle, CreditCard, PiggyBank, Info, X, Edit } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import BillForm from '@/components/forms/BillForm';
@@ -26,6 +26,8 @@ export default function Payday() {
   const [isCompleting, setIsCompleting] = useState(false);
   const [showBucketInfo, setShowBucketInfo] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [showEditPayday, setShowEditPayday] = useState(false);
+  const [editPaydayDate, setEditPaydayDate] = useState('');
   
   const queryClient = useQueryClient();
 
@@ -289,13 +291,26 @@ export default function Payday() {
             <Calendar size={12} />
             <span>{payFrequency.replace('_', '-')} pay</span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-black mb-1">
-            {nextPayday ? (() => {
-              const [y, m, d] = nextPayday.split('-').map(Number);
-              const date = new Date(y, m - 1, d);
-              return date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
-            })() : 'No payday set'}
-          </h2>
+          <div className="flex items-center justify-between mb-1">
+            <h2 className="text-xl sm:text-2xl font-black">
+              {nextPayday ? (() => {
+                const [y, m, d] = nextPayday.split('-').map(Number);
+                const date = new Date(y, m - 1, d);
+                return date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+              })() : 'No payday set'}
+            </h2>
+            <Button
+              onClick={() => {
+                setEditPaydayDate(nextPayday || '');
+                setShowEditPayday(true);
+              }}
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-lime-400 hover:text-lime-300 hover:bg-lime-500/10"
+            >
+              <Edit size={16} />
+            </Button>
+          </div>
           <p className="text-gray-400 text-xs mb-1">Expected Amount</p>
           <p className="text-3xl sm:text-4xl font-black text-lime-400 mb-3 sm:mb-4">${paycheckAmount.toLocaleString()}</p>
 
@@ -620,6 +635,54 @@ export default function Payday() {
             >
               Close
             </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Payday Modal */}
+      {showEditPayday && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+          <div className="bg-[#1a1a2e] border border-white/10 rounded-xl max-w-md w-full p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold">Change Payday Date</h2>
+              <Button variant="ghost" size="icon" onClick={() => setShowEditPayday(false)}>
+                <X size={20} />
+              </Button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm text-gray-400 block mb-2">Next Payday</label>
+                <input
+                  type="date"
+                  value={editPaydayDate}
+                  onChange={(e) => setEditPaydayDate(e.target.value)}
+                  className="w-full bg-[#252538] border border-white/10 rounded-lg px-4 py-3 text-white"
+                />
+              </div>
+
+              <Button
+                onClick={async () => {
+                  if (!primaryIncome || !editPaydayDate) return;
+                  
+                  try {
+                    await base44.entities.Income.update(primaryIncome.id, {
+                      next_payday: editPaydayDate
+                    });
+                    
+                    queryClient.invalidateQueries({ queryKey: ['incomes'] });
+                    setShowEditPayday(false);
+                  } catch (error) {
+                    console.error('Error updating payday:', error);
+                    alert('Error updating payday. Please try again.');
+                  }
+                }}
+                disabled={!editPaydayDate}
+                className="w-full bg-lime-500 text-black font-bold hover:bg-lime-400 disabled:opacity-50"
+              >
+                Save
+              </Button>
+            </div>
           </div>
         </div>
       )}
