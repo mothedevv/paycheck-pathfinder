@@ -288,49 +288,43 @@ export default function Payday() {
           <div className="space-y-2">
             {/* Bills Bucket */}
             <div className="bg-gradient-to-br from-pink-900/40 to-pink-950/30 border border-pink-500/30 rounded-lg p-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="p-1.5 rounded-lg bg-pink-500/20">
-                    <Receipt className="text-pink-400" size={16} />
-                  </div>
-                  <span className="text-pink-200 text-sm font-semibold uppercase tracking-wide">Bills</span>
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-pink-500/20">
+                  <Receipt className="text-pink-400" size={20} />
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex-1">
+                  <span className="text-pink-200 text-xs font-semibold uppercase tracking-wide block mb-0.5">Bills</span>
                   <p className="text-2xl font-black text-white">${billsAmount.toFixed(2)}</p>
-                  <p className="text-pink-300 text-xs">→ Transfer to HYSA</p>
                 </div>
+                <p className="text-pink-300 text-xs whitespace-nowrap">→ Transfer to HYSA</p>
               </div>
             </div>
 
             {/* Spending Bucket */}
             <div className="bg-gradient-to-br from-purple-900/40 to-purple-950/30 border border-purple-500/30 rounded-lg p-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="p-1.5 rounded-lg bg-purple-500/20">
-                    <CreditCard className="text-purple-400" size={16} />
-                  </div>
-                  <span className="text-purple-200 text-sm font-semibold uppercase tracking-wide">Spending</span>
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-purple-500/20">
+                  <CreditCard className="text-purple-400" size={20} />
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex-1">
+                  <span className="text-purple-200 text-xs font-semibold uppercase tracking-wide block mb-0.5">Spending</span>
                   <p className="text-2xl font-black text-white">${spendingAmount.toFixed(2)}</p>
-                  <p className="text-purple-300 text-xs">→ Keep in Checking</p>
                 </div>
+                <p className="text-purple-300 text-xs whitespace-nowrap">→ Keep in Checking</p>
               </div>
             </div>
 
             {/* Savings Bucket */}
             <div className="bg-gradient-to-br from-lime-900/40 to-lime-950/30 border border-lime-500/30 rounded-lg p-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="p-1.5 rounded-lg bg-lime-500/20">
-                    <PiggyBank className="text-lime-400" size={16} />
-                  </div>
-                  <span className="text-lime-200 text-sm font-semibold uppercase tracking-wide">Savings</span>
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-lime-500/20">
+                  <PiggyBank className="text-lime-400" size={20} />
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex-1">
+                  <span className="text-lime-200 text-xs font-semibold uppercase tracking-wide block mb-0.5">Savings</span>
                   <p className="text-2xl font-black text-white">${savingsAmount.toFixed(2)}</p>
-                  <p className="text-lime-300 text-xs">→ Transfer to HYSA</p>
                 </div>
+                <p className="text-lime-300 text-xs whitespace-nowrap">→ Transfer to HYSA</p>
               </div>
             </div>
           </div>
