@@ -299,7 +299,11 @@ export default function Payday() {
                     <div>
                       <h4 className="font-semibold text-white">{bill.name}</h4>
                       <p className="text-sm text-gray-400">
-                        Due: {new Date(bill.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        Due: {(() => {
+                          const [y, m, d] = bill.due_date.split('-').map(Number);
+                          const date = new Date(y, m - 1, d);
+                          return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                        })()}
                         {bill.is_autopay && <span className="ml-2 text-lime-400">• Auto-pay</span>}
                       </p>
                     </div>

@@ -164,7 +164,11 @@ export default function Bills() {
                   <div className="flex-1 min-w-0 pr-2">
                     <h3 className="font-semibold text-white text-sm sm:text-base truncate">{bill.name}</h3>
                     <p className="text-xs sm:text-sm text-gray-400 capitalize truncate">
-                      {bill.category?.replace('_', ' ')} • Due {new Date(bill.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      {bill.category?.replace('_', ' ')} • Due {(() => {
+                        const [y, m, d] = bill.due_date.split('-').map(Number);
+                        const date = new Date(y, m - 1, d);
+                        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                      })()}
                     </p>
                   </div>
                   <div className="text-right flex-shrink-0">
