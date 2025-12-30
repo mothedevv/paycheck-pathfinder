@@ -209,16 +209,14 @@ export default function Home() {
         <div className="grid grid-cols-2 gap-3 sm:gap-4 mt-4 sm:mt-6">
           <Button 
             onClick={() => setShowBillForm(true)}
-            variant="outline" 
-            className="w-full h-12 sm:h-14 border-white/20 text-white hover:bg-white/10 text-sm sm:text-base"
+            className="w-full h-12 sm:h-14 bg-[#1a1a2e] border border-white/20 text-white hover:bg-[#252538] text-sm sm:text-base font-semibold"
           >
             <Plus size={16} className="mr-1 sm:mr-2" />
             Add Bill
           </Button>
           <Button 
             onClick={() => setShowDebtForm(true)}
-            variant="outline" 
-            className="w-full h-12 sm:h-14 border-white/20 text-white hover:bg-white/10 text-sm sm:text-base"
+            className="w-full h-12 sm:h-14 bg-[#1a1a2e] border border-white/20 text-white hover:bg-[#252538] text-sm sm:text-base font-semibold"
           >
             <Plus size={16} className="mr-1 sm:mr-2" />
             Add Debt
@@ -228,8 +226,7 @@ export default function Home() {
         <div className="grid grid-cols-2 gap-3 sm:gap-4 mt-3 sm:mt-4">
           <Button 
             onClick={() => setShowGoalForm(true)}
-            variant="outline" 
-            className="w-full h-12 sm:h-14 border-white/20 text-white hover:bg-white/10 text-sm sm:text-base"
+            className="w-full h-12 sm:h-14 bg-[#1a1a2e] border border-white/20 text-white hover:bg-[#252538] text-sm sm:text-base font-semibold"
           >
             <Plus size={16} className="mr-1 sm:mr-2" />
             Add Goal
