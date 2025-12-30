@@ -116,8 +116,15 @@ export default function Home() {
       percentPaid: (() => {
         const carDebts = debts.filter(d => d.type === 'car_loan' && d.balance > 0);
         if (carDebts.length === 0) return 0;
-        const totalPaid = carDebts.reduce((sum, d) => sum + ((d.original_balance || d.balance) - d.balance), 0);
-        const totalOriginal = carDebts.reduce((sum, d) => sum + (d.original_balance || d.balance), 0);
+        const totalPaid = carDebts.reduce((sum, d) => {
+          const linkedAsset = assets.find(a => a.id === d.linked_asset_id);
+          const purchasePrice = linkedAsset?.purchase_price || d.original_balance || d.balance;
+          return sum + (purchasePrice - d.balance);
+        }, 0);
+        const totalOriginal = carDebts.reduce((sum, d) => {
+          const linkedAsset = assets.find(a => a.id === d.linked_asset_id);
+          return sum + (linkedAsset?.purchase_price || d.original_balance || d.balance);
+        }, 0);
         return totalOriginal > 0 ? Math.round((totalPaid / totalOriginal) * 100) : 0;
       })(),
       color: 'cyan',
@@ -139,8 +146,15 @@ export default function Home() {
       percentPaid: (() => {
         const mortgageDebts = debts.filter(d => d.type === 'mortgage' && d.balance > 0);
         if (mortgageDebts.length === 0) return 0;
-        const totalPaid = mortgageDebts.reduce((sum, d) => sum + ((d.original_balance || d.balance) - d.balance), 0);
-        const totalOriginal = mortgageDebts.reduce((sum, d) => sum + (d.original_balance || d.balance), 0);
+        const totalPaid = mortgageDebts.reduce((sum, d) => {
+          const linkedAsset = assets.find(a => a.id === d.linked_asset_id);
+          const purchasePrice = linkedAsset?.purchase_price || d.original_balance || d.balance;
+          return sum + (purchasePrice - d.balance);
+        }, 0);
+        const totalOriginal = mortgageDebts.reduce((sum, d) => {
+          const linkedAsset = assets.find(a => a.id === d.linked_asset_id);
+          return sum + (linkedAsset?.purchase_price || d.original_balance || d.balance);
+        }, 0);
         return totalOriginal > 0 ? Math.round((totalPaid / totalOriginal) * 100) : 0;
       })(),
       color: 'red',
