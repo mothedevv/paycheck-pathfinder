@@ -139,6 +139,10 @@ export default function Home() {
 
   const totalDebtAmount = debtCategories.reduce((sum, cat) => sum + cat.amount, 0);
 
+  // Calculate if Next Payday should be full width or half width
+  const totalOtherCards = 3 + debtCategories.length; // Bills + Assets + Debt Categories + Savings
+  const isNextPaydayFullWidth = totalOtherCards % 2 === 0;
+
   // Get next payday
   const primaryIncome = incomes.find(i => i.is_primary) || incomes[0];
   const nextPayday = primaryIncome?.next_payday;
@@ -336,25 +340,27 @@ export default function Home() {
               <p className="text-xs text-gray-500">{savingsProgress}% to goals</p>
             </div>
           </Link>
-        </div>
 
-        {/* Next Payday */}
-        <div className="bg-[#1a1a2e] border border-white/10 rounded-xl sm:rounded-2xl p-3 sm:p-5 mt-3 sm:mt-4">
-          <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-            <div className="p-1.5 sm:p-2 rounded-lg bg-green-500/20">
-              <Calendar className="text-green-400" size={16} />
+          {/* Next Payday - flexible width */}
+          <div className={isNextPaydayFullWidth ? "col-span-2" : ""}>
+            <div className="bg-[#1a1a2e] border border-white/10 rounded-xl sm:rounded-2xl p-3 sm:p-5 hover:bg-[#252538] transition-colors cursor-pointer">
+              <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+                <div className="p-1.5 sm:p-2 rounded-lg bg-green-500/20">
+                  <Calendar className="text-green-400" size={16} />
+                </div>
+                <span className="text-xs sm:text-sm text-gray-400">Next Payday</span>
+              </div>
+              <p className="text-xl sm:text-2xl font-black mb-1">
+                {nextPayday ? (() => {
+                  const [y, m, d] = nextPayday.split('-').map(Number);
+                  const date = new Date(y, m - 1, d);
+                  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                })() : 'Not set'}
+              </p>
+              <p className="text-xs text-gray-500">${expectedAmount.toLocaleString()}</p>
             </div>
-            <span className="text-xs sm:text-sm text-gray-400">Next Payday</span>
           </div>
-          <p className="text-xl sm:text-2xl font-black mb-1">
-            {nextPayday ? (() => {
-              const [y, m, d] = nextPayday.split('-').map(Number);
-              const date = new Date(y, m - 1, d);
-              return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-            })() : 'Not set'}
-          </p>
-          <p className="text-xs text-gray-500">${expectedAmount.toLocaleString()}</p>
-        </div>
+          </div>
 
         {/* Action Buttons */}
         <div className="grid grid-cols-2 gap-3 sm:gap-4 mt-4 sm:mt-6">
