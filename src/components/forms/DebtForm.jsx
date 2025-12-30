@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,9 +16,19 @@ export default function DebtForm({ debt, onClose, onSuccess }) {
     apr: debt?.apr || '',
     due_day: debt?.due_day || '',
     statement_day: debt?.statement_day || '',
-    type: debt?.type || 'credit_card'
+    type: debt?.type || 'credit_card',
+    linked_asset_id: debt?.linked_asset_id || ''
   });
   const [loading, setLoading] = useState(false);
+
+  const { data: assets = [] } = useQuery({
+    queryKey: ['assets'],
+    queryFn: async () => {
+      const currentUser = await base44.auth.me();
+      return base44.entities.Asset.filter({ created_by: currentUser.email });
+    },
+    refetchOnWindowFocus: false
+  });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
