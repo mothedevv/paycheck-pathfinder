@@ -35,14 +35,26 @@ export default function DebtForm({ debt, onClose, onSuccess }) {
     setLoading(true);
 
     try {
+      const dataToSubmit = {
+        ...formData,
+        balance: parseFloat(formData.balance),
+        original_balance: formData.original_balance ? parseFloat(formData.original_balance) : parseFloat(formData.balance),
+        minimum_payment: formData.minimum_payment ? parseFloat(formData.minimum_payment) : undefined,
+        apr: parseFloat(formData.apr),
+        due_day: parseInt(formData.due_day),
+        statement_day: formData.statement_day ? parseInt(formData.statement_day) : undefined,
+        linked_asset_id: formData.linked_asset_id || undefined
+      };
+
       if (debt) {
-        await base44.entities.Debt.update(debt.id, formData);
+        await base44.entities.Debt.update(debt.id, dataToSubmit);
       } else {
-        await base44.entities.Debt.create(formData);
+        await base44.entities.Debt.create(dataToSubmit);
       }
       onSuccess();
     } catch (error) {
       console.error('Error saving debt:', error);
+      alert('Error saving debt. Please try again.');
     } finally {
       setLoading(false);
     }
