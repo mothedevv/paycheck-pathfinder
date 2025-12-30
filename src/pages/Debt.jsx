@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Plus, TrendingDown, Receipt, Calendar } from 'lucide-react';
+import { ArrowLeft, Plus, TrendingDown, Receipt, Calendar, Home, Car, Package, Edit, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import DebtForm from '@/components/forms/DebtForm';
@@ -41,6 +41,29 @@ export default function Debt() {
     },
     refetchOnWindowFocus: false
   });
+
+  // Calculate totals
+  const totalAssetValue = assets.reduce((sum, a) => sum + (a.current_value || 0), 0);
+  const totalDebtValue = debts.reduce((sum, d) => sum + (d.balance || 0), 0);
+  const netWorth = totalAssetValue - totalDebtValue;
+
+  const getAssetIcon = (type) => {
+    switch(type) {
+      case 'property': return Home;
+      case 'vehicle': return Car;
+      default: return Package;
+    }
+  };
+
+  const getLinkedDebt = (assetId) => {
+    return debts.find(d => d.linked_asset_id === assetId);
+  };
+
+  const getLinkedAsset = (debtId) => {
+    const debt = debts.find(d => d.id === debtId);
+    if (!debt?.linked_asset_id) return null;
+    return assets.find(a => a.id === debt.linked_asset_id);
+  };
 
   return (
     <div className="min-h-screen bg-[#0d0d1a] text-white pb-24">
@@ -82,89 +105,199 @@ export default function Debt() {
         </div>
         <p className="text-lime-400 italic text-xs sm:text-sm ml-11 sm:ml-14">"{saying}"</p>
 
+        {/* Summary Cards */}
+        <div className="mt-4 sm:mt-6 space-y-3">
+          {/* Assets Header */}
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-bold">Assets</h2>
+            <Button 
+              onClick={() => {
+                setEditingAsset(null);
+                setShowAssetForm(true);
+              }}
+              className="bg-lime-500 text-black font-bold hover:bg-lime-400 h-9 text-sm px-3"
+            >
+              <Plus size={14} className="mr-1" />
+              Add Asset
+            </Button>
+          </div>
+
+          {/* Total Value Card */}
+          <div className="bg-gradient-to-br from-emerald-900/40 to-emerald-950/30 border border-emerald-500/30 rounded-xl p-4">
+            <p className="text-emerald-200/60 text-xs uppercase tracking-wider mb-1">Total Value</p>
+            <p className="text-3xl font-black text-lime-400">${totalAssetValue.toLocaleString()}</p>
+          </div>
+
+          {/* Owed Card */}
+          <div className="bg-gradient-to-br from-red-900/40 to-red-950/30 border border-red-500/30 rounded-xl p-4">
+            <p className="text-red-200/60 text-xs uppercase tracking-wider mb-1">Owed</p>
+            <p className="text-3xl font-black text-red-400">${totalDebtValue.toLocaleString()}</p>
+          </div>
+
+          {/* Net Worth Card */}
+          <div className="bg-gradient-to-br from-lime-900/40 to-lime-950/30 border border-lime-500/30 rounded-xl p-4">
+            <p className="text-lime-200/60 text-xs uppercase tracking-wider mb-1">Net Worth</p>
+            <p className="text-3xl font-black text-lime-400">${netWorth.toLocaleString()}</p>
+          </div>
+        </div>
+
+        {/* Individual Assets */}
+        {assets.length > 0 && (
+          <div className="mt-6 space-y-3">
+            {assets.map(asset => {
+              const Icon = getAssetIcon(asset.type);
+              const linkedDebt = getLinkedDebt(asset.id);
+              const equity = linkedDebt ? asset.current_value - linkedDebt.balance : asset.current_value;
+              const equityPercent = asset.purchase_price ? Math.round(((asset.current_value - asset.purchase_price) / asset.purchase_price) * 100) : 0;
+
+              return (
+                <div
+                  key={asset.id}
+                  className="bg-gradient-to-br from-[#1f2a2e] to-[#1a1a2e] border border-white/10 rounded-xl p-4"
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-lime-500/20">
+                        <Icon className="text-lime-400" size={20} />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-white text-base">{asset.name}</h3>
+                        <p className="text-xs text-gray-400 capitalize">{asset.type}</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-1">
+                      <Button
+                        onClick={() => {
+                          setEditingAsset(asset);
+                          setShowAssetForm(true);
+                        }}
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-gray-400 hover:text-white hover:bg-white/10"
+                      >
+                        <Edit size={14} />
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-400">Current Value</span>
+                      <span className="text-xl font-bold text-lime-400">${asset.current_value.toLocaleString()}</span>
+                    </div>
+
+                    {linkedDebt && (
+                      <>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-400">Owed ({linkedDebt.name})</span>
+                          <span className="text-lg font-bold text-red-400">${linkedDebt.balance.toLocaleString()}</span>
+                        </div>
+                      </>
+                    )}
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-400">Equity</span>
+                      <span className="text-xl font-bold text-white">${equity.toLocaleString()}</span>
+                    </div>
+
+                    {asset.purchase_price && equityPercent !== 0 && (
+                      <div className="flex items-center justify-between pt-2 border-t border-white/5">
+                        <span className="text-xs text-gray-500">Since purchase</span>
+                        <span className={`text-sm font-semibold ${equityPercent >= 0 ? 'text-lime-400' : 'text-red-400'}`}>
+                          {equityPercent >= 0 ? '↗' : '↘'} {Math.abs(equityPercent)}%
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Debts Section */}
+        {debts.length > 0 && (
+          <div className="mt-8">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold">Debts</h2>
+              <Button 
+                onClick={() => {
+                  setEditingDebt(null);
+                  setShowDebtForm(true);
+                }}
+                className="bg-lime-500 text-black font-bold hover:bg-lime-400 h-9 text-sm px-3"
+              >
+                <Plus size={14} className="mr-1" />
+                Add Debt
+              </Button>
+            </div>
+            <div className="space-y-3">
+              {debts.map(debt => {
+                const linkedAsset = getLinkedAsset(debt.id);
+
+                return (
+                  <div
+                    key={debt.id}
+                    className="bg-gradient-to-br from-[#2a1f1f] to-[#1a1a2e] border border-red-500/20 rounded-xl p-4"
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <div>
+                        <h3 className="font-semibold text-white text-base">{debt.name}</h3>
+                        <p className="text-xs text-gray-400 capitalize">
+                          {debt.type?.replace('_', ' ')}
+                          {linkedAsset && <span className="ml-2">• {linkedAsset.name}</span>}
+                        </p>
+                      </div>
+                      <Button
+                        onClick={() => {
+                          setEditingDebt(debt);
+                          setShowDebtForm(true);
+                        }}
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-gray-400 hover:text-white hover:bg-white/10"
+                      >
+                        <Edit size={14} />
+                      </Button>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-400">Balance</span>
+                        <span className="text-xl font-bold text-red-400">${debt.balance.toLocaleString()}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-400">APR</span>
+                        <span className="text-white font-semibold">{debt.apr}%</span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm pt-2 border-t border-white/5">
+                        <span className="text-gray-500">Min Payment</span>
+                        <span className="text-gray-300">${debt.minimum_payment?.toLocaleString() || 0}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-500">Due Day</span>
+                        <span className="text-gray-300">{debt.due_day}</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Empty State */}
-        {debts.length === 0 && (
+        {assets.length === 0 && debts.length === 0 && (
           <div className="flex flex-col items-center justify-center py-16 mt-12">
             <div className="p-8 rounded-3xl bg-gradient-to-br from-lime-900/20 to-lime-950/10 mb-6">
               <TrendingDown size={64} className="text-lime-500" strokeWidth={3} />
             </div>
             <h2 className="text-2xl font-black mb-3">
-              No debt? Hell yeah! 🎉
+              Track your assets & debt
             </h2>
             <p className="text-gray-400 text-center text-sm max-w-sm mb-8 leading-relaxed">
-              Either you're debt-free (congrats!) or you haven't added your debts yet. Be honest with yourself.
+              Start by adding your assets (home, car) and any debts to see your net worth.
             </p>
-            <Button 
-              onClick={() => setShowDebtForm(true)}
-              className="bg-lime-500 text-black font-bold hover:bg-lime-400 px-8 h-12"
-            >
-              <Plus size={20} className="mr-2" />
-              Add Debt Account
-            </Button>
-          </div>
-        )}
-
-        {/* Debt List */}
-        {debts.length > 0 && (
-          <div className="mt-4 sm:mt-6 space-y-2 sm:space-y-3">
-            {debts.map(debt => (
-              <div
-                key={debt.id}
-                onClick={() => {
-                  setEditingDebt(debt);
-                  setShowDebtForm(true);
-                }}
-                className="bg-[#1a1a2e] border border-white/10 rounded-xl p-3 sm:p-4 hover:bg-[#252538] transition-colors cursor-pointer"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex-1 min-w-0 pr-2">
-                    <h3 className="font-semibold text-white text-sm sm:text-base truncate">{debt.name}</h3>
-                    <p className="text-xs sm:text-sm text-gray-400 capitalize">
-                      {debt.type?.replace('_', ' ')}
-                    </p>
-                  </div>
-                  <div className="text-right flex-shrink-0">
-                    <p className="text-lg sm:text-xl font-bold text-red-400">${debt.balance.toLocaleString()}</p>
-                    <p className="text-xs text-gray-400">{debt.apr}% APR</p>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between text-xs text-gray-500 mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-white/5">
-                  <span>Min: ${debt.minimum_payment?.toLocaleString() || 0}</span>
-                  <span>Due: {debt.due_day}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Assets Section */}
-        {assets.length > 0 && (
-          <div className="mt-8">
-            <h2 className="text-xl font-bold mb-4">Your Assets</h2>
-            <div className="space-y-3">
-              {assets.map(asset => (
-                <div
-                  key={asset.id}
-                  onClick={() => {
-                    setEditingAsset(asset);
-                    setShowAssetForm(true);
-                  }}
-                  className="bg-[#1a1a2e] border border-white/10 rounded-xl p-4 hover:bg-[#252538] transition-colors cursor-pointer"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-semibold text-white">{asset.name}</h3>
-                      <p className="text-sm text-gray-400 capitalize">
-                        {asset.type}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xl font-bold text-green-400">${asset.current_value.toLocaleString()}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
           </div>
         )}
       </div>

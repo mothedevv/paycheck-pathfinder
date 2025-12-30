@@ -139,9 +139,28 @@ export default function DebtForm({ debt, onClose, onSuccess }) {
                 <SelectItem value="mortgage">Mortgage</SelectItem>
                 <SelectItem value="medical">Medical</SelectItem>
                 <SelectItem value="other">Other</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+                </SelectContent>
+                </Select>
+                </div>
+
+                {/* Linked Asset */}
+                <div className="space-y-2">
+                <Label>Linked Asset (Optional)</Label>
+                <Select
+                value={formData.linked_asset_id || 'none'}
+                onValueChange={(value) => setFormData({ ...formData, linked_asset_id: value === 'none' ? '' : value })}
+                >
+                <SelectTrigger className="bg-[#1a1a2e] border-white/10 text-white">
+                <SelectValue placeholder="Select asset" />
+                </SelectTrigger>
+                <SelectContent>
+                <SelectItem value="none">None</SelectItem>
+                {assets.map(asset => (
+                  <SelectItem key={asset.id} value={asset.id}>{asset.name}</SelectItem>
+                ))}
+                </SelectContent>
+                </Select>
+                </div>
 
           <div className="flex gap-3 pt-4">
             {debt && (
