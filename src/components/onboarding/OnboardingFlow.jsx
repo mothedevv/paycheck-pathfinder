@@ -118,7 +118,7 @@ export default function OnboardingFlow({ onComplete }) {
   return (
     <div className="min-h-screen bg-[#0d0d1a] text-white flex items-center justify-center px-4 py-8">
       <div className="max-w-md w-full">
-        {step === 1 ? (
+        {step === 1 && (
           <>
             {/* Header */}
             <div className="text-center mb-8">
@@ -231,7 +231,9 @@ export default function OnboardingFlow({ onComplete }) {
               </Button>
             </div>
           </>
-        ) : (
+        )}
+
+        {step === 2 && (
           <>
             {/* Step 2: Monthly Bills */}
             <div className="text-center mb-8">
@@ -279,7 +281,9 @@ export default function OnboardingFlow({ onComplete }) {
               </div>
             </div>
           </>
-        ) : step === 3 ? (
+        )}
+
+        {step === 3 && (
           <>
             {/* Step 3: Debt Payments */}
             <div className="text-center mb-8">
@@ -327,7 +331,7 @@ export default function OnboardingFlow({ onComplete }) {
               </div>
             </div>
           </>
-        ) : null}
+        )}
       </div>
     </div>
   );
