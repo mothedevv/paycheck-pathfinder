@@ -235,6 +235,8 @@ export default function Debt() {
             <div className="space-y-3">
               {debts.map(debt => {
                 const linkedAsset = getLinkedAsset(debt.id);
+                const paidOffPercent = debt.original_balance ? 
+                  Math.round(((debt.original_balance - debt.balance) / debt.original_balance) * 100) : 0;
 
                 return (
                   <div
@@ -279,6 +281,14 @@ export default function Debt() {
                         <span className="text-gray-500">Due Day</span>
                         <span className="text-gray-300">{debt.due_day}</span>
                       </div>
+                      {paidOffPercent > 0 && (
+                        <div className="flex items-center justify-between pt-2 border-t border-white/5">
+                          <span className="text-xs text-gray-500">Paid off</span>
+                          <span className="text-sm font-semibold text-lime-400">
+                            {paidOffPercent}%
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
