@@ -36,31 +36,31 @@ export default function Debt() {
 
   return (
     <div className="min-h-screen bg-[#0d0d1a] text-white pb-24">
-      <div className="max-w-lg mx-auto px-4 py-6">
+      <div className="max-w-lg mx-auto px-4 py-4 sm:py-6">
         {/* Header */}
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between mb-3 sm:mb-4">
+          <div className="flex items-center gap-2 sm:gap-3">
             <Link to={createPageUrl('Home')}>
-              <Button variant="ghost" size="icon" className="text-white hover:bg-white/10">
-                <ArrowLeft size={24} />
+              <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 h-9 w-9 sm:h-10 sm:w-10">
+                <ArrowLeft size={20} />
               </Button>
             </Link>
-            <h1 className="text-3xl font-black leading-tight">
+            <h1 className="text-2xl sm:text-3xl font-black leading-tight">
               Assets<br />& Debt
             </h1>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">
-              <Plus size={18} className="mr-1" />
+          <div className="flex gap-1.5 sm:gap-2">
+            <Button variant="outline" className="border-white/20 text-white hover:bg-white/10 h-9 sm:h-10 text-xs sm:text-sm px-2 sm:px-4">
+              <Plus size={14} className="mr-1" />
               Asset
             </Button>
-            <Button className="bg-lime-500 text-black font-bold hover:bg-lime-400">
-              <Plus size={18} className="mr-1" />
+            <Button className="bg-lime-500 text-black font-bold hover:bg-lime-400 h-9 sm:h-10 text-xs sm:text-sm px-2 sm:px-4">
+              <Plus size={14} className="mr-1" />
               Debt
             </Button>
           </div>
         </div>
-        <p className="text-lime-400 italic text-sm ml-14">"{saying}"</p>
+        <p className="text-lime-400 italic text-xs sm:text-sm ml-11 sm:ml-14">"{saying}"</p>
 
         {/* Empty State */}
         {debts.length === 0 && (
@@ -83,27 +83,27 @@ export default function Debt() {
 
         {/* Debt List */}
         {debts.length > 0 && (
-          <div className="mt-6 space-y-3">
+          <div className="mt-4 sm:mt-6 space-y-2 sm:space-y-3">
             {debts.map(debt => (
               <div
                 key={debt.id}
-                className="bg-[#1a1a2e] border border-white/10 rounded-xl p-4 hover:bg-[#252538] transition-colors cursor-pointer"
+                className="bg-[#1a1a2e] border border-white/10 rounded-xl p-3 sm:p-4 hover:bg-[#252538] transition-colors cursor-pointer"
               >
                 <div className="flex items-center justify-between mb-2">
-                  <div>
-                    <h3 className="font-semibold text-white">{debt.name}</h3>
-                    <p className="text-sm text-gray-400 capitalize">
+                  <div className="flex-1 min-w-0 pr-2">
+                    <h3 className="font-semibold text-white text-sm sm:text-base truncate">{debt.name}</h3>
+                    <p className="text-xs sm:text-sm text-gray-400 capitalize">
                       {debt.type?.replace('_', ' ')}
                     </p>
                   </div>
-                  <div className="text-right">
-                    <p className="text-xl font-bold text-red-400">${debt.balance.toLocaleString()}</p>
+                  <div className="text-right flex-shrink-0">
+                    <p className="text-lg sm:text-xl font-bold text-red-400">${debt.balance.toLocaleString()}</p>
                     <p className="text-xs text-gray-400">{debt.apr}% APR</p>
                   </div>
                 </div>
-                <div className="flex items-center justify-between text-xs text-gray-500 mt-3 pt-3 border-t border-white/5">
-                  <span>Min payment: ${debt.minimum_payment?.toLocaleString() || 0}</span>
-                  <span>Due day: {debt.due_day}</span>
+                <div className="flex items-center justify-between text-xs text-gray-500 mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-white/5">
+                  <span>Min: ${debt.minimum_payment?.toLocaleString() || 0}</span>
+                  <span>Due: {debt.due_day}</span>
                 </div>
               </div>
             ))}

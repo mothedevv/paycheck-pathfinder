@@ -81,77 +81,77 @@ export default function Payday() {
 
   return (
     <div className="min-h-screen bg-[#0d0d1a] text-white pb-24">
-      <div className="max-w-lg mx-auto px-4 py-6">
+      <div className="max-w-lg mx-auto px-4 py-4 sm:py-6">
         {/* Header */}
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between mb-3 sm:mb-4">
+          <div className="flex items-center gap-2 sm:gap-3">
             <Link to={createPageUrl('Home')}>
-              <Button variant="ghost" size="icon" className="text-white hover:bg-white/10">
-                <ArrowLeft size={24} />
+              <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 h-9 w-9 sm:h-10 sm:w-10">
+                <ArrowLeft size={20} />
               </Button>
             </Link>
-            <h1 className="text-3xl font-black leading-tight">
+            <h1 className="text-2xl sm:text-3xl font-black leading-tight">
               Payday<br />Planner
             </h1>
           </div>
-          <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">
+          <Button variant="outline" className="border-white/20 text-white hover:bg-white/10 h-9 sm:h-10 text-sm sm:text-base px-3 sm:px-4">
             History
           </Button>
         </div>
-        <p className="text-lime-400 italic text-sm ml-14">"{saying}"</p>
+        <p className="text-lime-400 italic text-xs sm:text-sm ml-11 sm:ml-14">"{saying}"</p>
 
         {/* Payday Card */}
-        <div className="mt-6 bg-gradient-to-br from-[#2d3a1f] to-[#1a2312] border border-lime-500/30 rounded-2xl p-6">
-          <div className="flex items-center gap-2 text-lime-400 text-sm mb-2">
-            <Calendar size={16} />
+        <div className="mt-4 sm:mt-6 bg-gradient-to-br from-[#2d3a1f] to-[#1a2312] border border-lime-500/30 rounded-xl sm:rounded-2xl p-4 sm:p-6">
+          <div className="flex items-center gap-2 text-lime-400 text-xs sm:text-sm mb-2">
+            <Calendar size={14} />
             <span>{payFrequency.replace('_', '-')} pay</span>
           </div>
-          <h2 className="text-3xl font-black mb-2">
+          <h2 className="text-2xl sm:text-3xl font-black mb-2">
             {nextPayday ? new Date(nextPayday).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }) : 'No payday set'}
           </h2>
-          <p className="text-gray-400 text-sm mb-2">Expected Amount</p>
-          <p className="text-5xl font-black text-lime-400 mb-6">${paycheckAmount.toLocaleString()}</p>
+          <p className="text-gray-400 text-xs sm:text-sm mb-2">Expected Amount</p>
+          <p className="text-4xl sm:text-5xl font-black text-lime-400 mb-4 sm:mb-6">${paycheckAmount.toLocaleString()}</p>
 
           {/* Budget Allocations */}
-          <div className="space-y-3">
+          <div className="space-y-2 sm:space-y-3">
             {/* Bills Bucket */}
-            <div className="bg-gradient-to-br from-pink-900/40 to-pink-950/30 border border-pink-500/30 rounded-xl p-4">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 rounded-lg bg-pink-500/20">
-                  <Receipt className="text-pink-400" size={20} />
+            <div className="bg-gradient-to-br from-pink-900/40 to-pink-950/30 border border-pink-500/30 rounded-xl p-3 sm:p-4">
+              <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                <div className="p-1.5 sm:p-2 rounded-lg bg-pink-500/20">
+                  <Receipt className="text-pink-400" size={16} />
                 </div>
-                <span className="text-pink-200 text-sm font-semibold uppercase tracking-wide">Bills</span>
+                <span className="text-pink-200 text-xs sm:text-sm font-semibold uppercase tracking-wide">Bills</span>
               </div>
-              <p className="text-3xl font-black text-white mb-2">${billsAmount.toFixed(2)}</p>
-              <p className="text-pink-300 text-sm flex items-center gap-1">
+              <p className="text-2xl sm:text-3xl font-black text-white mb-2">${billsAmount.toFixed(2)}</p>
+              <p className="text-pink-300 text-xs sm:text-sm flex items-center gap-1">
                 → Transfer to HYSA
               </p>
             </div>
 
             {/* Spending Bucket */}
-            <div className="bg-gradient-to-br from-purple-900/40 to-purple-950/30 border border-purple-500/30 rounded-xl p-4">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 rounded-lg bg-purple-500/20">
-                  <CreditCard className="text-purple-400" size={20} />
+            <div className="bg-gradient-to-br from-purple-900/40 to-purple-950/30 border border-purple-500/30 rounded-xl p-3 sm:p-4">
+              <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                <div className="p-1.5 sm:p-2 rounded-lg bg-purple-500/20">
+                  <CreditCard className="text-purple-400" size={16} />
                 </div>
-                <span className="text-purple-200 text-sm font-semibold uppercase tracking-wide">Spending</span>
+                <span className="text-purple-200 text-xs sm:text-sm font-semibold uppercase tracking-wide">Spending</span>
               </div>
-              <p className="text-3xl font-black text-white mb-2">${spendingAmount.toFixed(2)}</p>
-              <p className="text-purple-300 text-sm flex items-center gap-1">
+              <p className="text-2xl sm:text-3xl font-black text-white mb-2">${spendingAmount.toFixed(2)}</p>
+              <p className="text-purple-300 text-xs sm:text-sm flex items-center gap-1">
                 → Keep in Checking
               </p>
             </div>
 
             {/* Savings Bucket */}
-            <div className="bg-gradient-to-br from-lime-900/40 to-lime-950/30 border border-lime-500/30 rounded-xl p-4">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 rounded-lg bg-lime-500/20">
-                  <PiggyBank className="text-lime-400" size={20} />
+            <div className="bg-gradient-to-br from-lime-900/40 to-lime-950/30 border border-lime-500/30 rounded-xl p-3 sm:p-4">
+              <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                <div className="p-1.5 sm:p-2 rounded-lg bg-lime-500/20">
+                  <PiggyBank className="text-lime-400" size={16} />
                 </div>
-                <span className="text-lime-200 text-sm font-semibold uppercase tracking-wide">Savings</span>
+                <span className="text-lime-200 text-xs sm:text-sm font-semibold uppercase tracking-wide">Savings</span>
               </div>
-              <p className="text-3xl font-black text-white mb-2">${savingsAmount.toFixed(2)}</p>
-              <p className="text-lime-300 text-sm flex items-center gap-1">
+              <p className="text-2xl sm:text-3xl font-black text-white mb-2">${savingsAmount.toFixed(2)}</p>
+              <p className="text-lime-300 text-xs sm:text-sm flex items-center gap-1">
                 → Transfer to HYSA
               </p>
             </div>
@@ -239,9 +239,9 @@ export default function Payday() {
         </div>
 
         {/* Mark Complete Button */}
-        <div className="mt-8">
-          <Button className="w-full bg-lime-500 text-black font-bold hover:bg-lime-400 h-14 text-lg">
-            <CheckCircle size={20} className="mr-2" />
+        <div className="mt-6 sm:mt-8">
+          <Button className="w-full bg-lime-500 text-black font-bold hover:bg-lime-400 h-12 sm:h-14 text-base sm:text-lg">
+            <CheckCircle size={18} className="mr-2" />
             Mark Payday Complete
           </Button>
         </div>

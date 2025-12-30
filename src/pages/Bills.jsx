@@ -50,62 +50,63 @@ export default function Bills() {
 
   return (
     <div className="min-h-screen bg-[#0d0d1a] text-white pb-24">
-      <div className="max-w-lg mx-auto px-4 py-6">
+      <div className="max-w-lg mx-auto px-4 py-4 sm:py-6">
         {/* Header */}
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between mb-3 sm:mb-4">
+          <div className="flex items-center gap-2 sm:gap-3">
             <Link to={createPageUrl('Home')}>
-              <Button variant="ghost" size="icon" className="text-white hover:bg-white/10">
-                <ArrowLeft size={24} />
+              <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 h-9 w-9 sm:h-10 sm:w-10">
+                <ArrowLeft size={20} />
               </Button>
             </Link>
-            <h1 className="text-3xl font-black">Your Bills</h1>
+            <h1 className="text-2xl sm:text-3xl font-black">Your Bills</h1>
           </div>
-          <Button className="bg-lime-500 text-black font-bold hover:bg-lime-400">
-            <Plus size={18} className="mr-2" />
-            Add Bill
+          <Button className="bg-lime-500 text-black font-bold hover:bg-lime-400 h-9 sm:h-10 text-sm sm:text-base px-3 sm:px-4">
+            <Plus size={16} className="mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Add Bill</span>
+            <span className="sm:hidden">Add</span>
           </Button>
         </div>
-        <p className="text-lime-400 italic text-sm ml-14">"{saying}"</p>
+        <p className="text-lime-400 italic text-xs sm:text-sm ml-11 sm:ml-14">"{saying}"</p>
 
         {/* Total Bills Card */}
-        <div className="bg-gradient-to-br from-pink-900/40 to-pink-950/20 border border-pink-800/30 rounded-2xl p-6 mt-6">
-          <div className="flex items-start justify-between mb-4">
+        <div className="bg-gradient-to-br from-pink-900/40 to-pink-950/20 border border-pink-800/30 rounded-xl sm:rounded-2xl p-4 sm:p-6 mt-4 sm:mt-6">
+          <div className="flex items-start justify-between mb-3 sm:mb-4">
             <div>
-              <p className="text-sm text-pink-200/60 uppercase tracking-wider mb-2">Total Monthly Bills</p>
-              <p className="text-5xl font-black mb-1">${totalBills.toLocaleString()}</p>
-              <p className="text-sm text-pink-200/60">{bills.length} bills tracked</p>
+              <p className="text-xs sm:text-sm text-pink-200/60 uppercase tracking-wider mb-2">Total Monthly Bills</p>
+              <p className="text-3xl sm:text-5xl font-black mb-1">${totalBills.toLocaleString()}</p>
+              <p className="text-xs sm:text-sm text-pink-200/60">{bills.length} bills tracked</p>
             </div>
-            <div className="p-4 rounded-2xl bg-pink-800/40">
-              <Receipt size={32} className="text-pink-300" />
+            <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-pink-800/40">
+              <Receipt size={24} className="text-pink-300 sm:w-8 sm:h-8" />
             </div>
           </div>
           
-          <div className="border-t border-pink-800/30 pt-4 mt-4">
+          <div className="border-t border-pink-800/30 pt-3 sm:pt-4 mt-3 sm:mt-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-pink-200/80">Bills Allocation ({budget?.bills_percentage || 50}%)</span>
-              <span className="text-lg font-bold">${billsAllocation.toLocaleString()}/mo</span>
+              <span className="text-xs sm:text-sm text-pink-200/80">Bills Allocation ({budget?.bills_percentage || 50}%)</span>
+              <span className="text-base sm:text-lg font-bold">${billsAllocation.toLocaleString()}/mo</span>
             </div>
           </div>
         </div>
 
         {/* Search */}
-        <div className="relative mt-6">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+        <div className="relative mt-4 sm:mt-6">
+          <Search className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
           <Input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search bills..."
-            className="pl-11 bg-[#1a1a2e] border-white/10 text-white placeholder:text-gray-500 h-12"
+            className="pl-10 sm:pl-11 bg-[#1a1a2e] border-white/10 text-white placeholder:text-gray-500 h-11 sm:h-12 text-sm sm:text-base"
           />
         </div>
 
         {/* Category Filter */}
-        <div className="mt-4">
+        <div className="mt-3 sm:mt-4">
           <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-            <SelectTrigger className="bg-[#1a1a2e] border-white/10 text-white h-12">
+            <SelectTrigger className="bg-[#1a1a2e] border-white/10 text-white h-11 sm:h-12 text-sm sm:text-base">
               <div className="flex items-center gap-2">
-                <Filter size={18} />
+                <Filter size={16} />
                 <SelectValue />
               </div>
             </SelectTrigger>
@@ -138,21 +139,21 @@ export default function Bills() {
             </p>
           </div>
         ) : (
-          <div className="mt-6 space-y-3">
+          <div className="mt-4 sm:mt-6 space-y-2 sm:space-y-3">
             {filteredBills.map(bill => (
               <div
                 key={bill.id}
-                className="bg-[#1a1a2e] border border-white/10 rounded-xl p-4 hover:bg-[#252538] transition-colors cursor-pointer"
+                className="bg-[#1a1a2e] border border-white/10 rounded-xl p-3 sm:p-4 hover:bg-[#252538] transition-colors cursor-pointer"
               >
                 <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-semibold text-white">{bill.name}</h3>
-                    <p className="text-sm text-gray-400 capitalize">
+                  <div className="flex-1 min-w-0 pr-2">
+                    <h3 className="font-semibold text-white text-sm sm:text-base truncate">{bill.name}</h3>
+                    <p className="text-xs sm:text-sm text-gray-400 capitalize truncate">
                       {bill.category?.replace('_', ' ')} • Due {new Date(bill.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                     </p>
                   </div>
-                  <div className="text-right">
-                    <p className="text-lg font-bold">${bill.amount.toLocaleString()}</p>
+                  <div className="text-right flex-shrink-0">
+                    <p className="text-base sm:text-lg font-bold">${bill.amount.toLocaleString()}</p>
                     {bill.is_autopay && (
                       <p className="text-xs text-lime-400">Auto-pay</p>
                     )}

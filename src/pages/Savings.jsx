@@ -27,25 +27,26 @@ export default function Savings() {
 
   return (
     <div className="min-h-screen bg-[#0d0d1a] text-white pb-24">
-      <div className="max-w-lg mx-auto px-4 py-6">
+      <div className="max-w-lg mx-auto px-4 py-4 sm:py-6">
         {/* Header */}
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between mb-3 sm:mb-4">
+          <div className="flex items-center gap-2 sm:gap-3">
             <Link to={createPageUrl('Home')}>
-              <Button variant="ghost" size="icon" className="text-white hover:bg-white/10">
-                <ArrowLeft size={24} />
+              <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 h-9 w-9 sm:h-10 sm:w-10">
+                <ArrowLeft size={20} />
               </Button>
             </Link>
-            <h1 className="text-3xl font-black leading-tight">
+            <h1 className="text-2xl sm:text-3xl font-black leading-tight">
               Savings<br />Goals
             </h1>
           </div>
-          <Button className="bg-lime-500 text-black font-bold hover:bg-lime-400">
-            <Plus size={18} className="mr-2" />
-            Add Goal
+          <Button className="bg-lime-500 text-black font-bold hover:bg-lime-400 h-9 sm:h-10 text-sm sm:text-base px-3 sm:px-4">
+            <Plus size={16} className="mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Add Goal</span>
+            <span className="sm:hidden">Add</span>
           </Button>
         </div>
-        <p className="text-lime-400 italic text-sm ml-14">"{saying}"</p>
+        <p className="text-lime-400 italic text-xs sm:text-sm ml-11 sm:ml-14">"{saying}"</p>
 
         {/* Empty State */}
         {savingsGoals.length === 0 && (
@@ -68,25 +69,25 @@ export default function Savings() {
 
         {/* Goals List */}
         {savingsGoals.length > 0 && (
-          <div className="mt-6 space-y-3">
+          <div className="mt-4 sm:mt-6 space-y-2 sm:space-y-3">
             {savingsGoals.map(goal => {
               const progress = goal.target_amount > 0 ? (goal.current_amount / goal.target_amount) * 100 : 0;
               return (
                 <div
                   key={goal.id}
-                  className="bg-[#1a1a2e] border border-white/10 rounded-xl p-4 hover:bg-[#252538] transition-colors cursor-pointer"
+                  className="bg-[#1a1a2e] border border-white/10 rounded-xl p-3 sm:p-4 hover:bg-[#252538] transition-colors cursor-pointer"
                 >
-                  <div className="flex items-center justify-between mb-3">
-                    <div>
-                      <h3 className="font-semibold text-white">{goal.name}</h3>
+                  <div className="flex items-center justify-between mb-2 sm:mb-3">
+                    <div className="flex-1 min-w-0 pr-2">
+                      <h3 className="font-semibold text-white text-sm sm:text-base truncate">{goal.name}</h3>
                       {goal.target_date && (
-                        <p className="text-sm text-gray-400">
-                          Target: {new Date(goal.target_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        <p className="text-xs sm:text-sm text-gray-400">
+                          Target: {new Date(goal.target_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                         </p>
                       )}
                     </div>
-                    <div className="text-right">
-                      <p className="text-xl font-bold text-lime-400">${goal.current_amount.toLocaleString()}</p>
+                    <div className="text-right flex-shrink-0">
+                      <p className="text-lg sm:text-xl font-bold text-lime-400">${goal.current_amount.toLocaleString()}</p>
                       <p className="text-xs text-gray-400">of ${goal.target_amount.toLocaleString()}</p>
                     </div>
                   </div>

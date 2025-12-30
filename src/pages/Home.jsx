@@ -103,28 +103,29 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#0d0d1a] text-white pb-24">
-      <div className="max-w-lg mx-auto px-4 py-6">
+      <div className="max-w-lg mx-auto px-4 py-4 sm:py-6">
         {/* Header */}
-        <div className="flex items-start justify-between mb-2">
+        <div className="flex items-start justify-between mb-4">
           <div>
-            <h1 className="text-3xl font-black">Your Money Dashboard</h1>
-            <p className="text-lime-400 italic text-sm mt-1">"{saying}"</p>
+            <h1 className="text-2xl sm:text-3xl font-black leading-tight">Your Money Dashboard</h1>
+            <p className="text-lime-400 italic text-xs sm:text-sm mt-1">"{saying}"</p>
           </div>
           <Link to={createPageUrl('Settings')}>
             <Button 
               variant="outline" 
-              className="border-white/20 text-white hover:bg-white/10 flex items-center gap-2"
+              className="border-white/20 text-white hover:bg-white/10 flex items-center gap-1 text-xs sm:text-sm h-9 sm:h-10 px-2 sm:px-4"
             >
-              <Settings size={16} />
-              Edit Buckets
+              <Settings size={14} className="sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">Edit Buckets</span>
+              <span className="sm:hidden">Edit</span>
             </Button>
           </Link>
         </div>
 
         {/* Track Income Sources Card */}
-        <div className="bg-[#1a1a2e] border border-white/10 rounded-2xl p-6 mt-6">
-          <h2 className="text-xl font-bold mb-2">Track Your Income Sources</h2>
-          <p className="text-gray-400 text-sm mb-4">
+        <div className="bg-[#1a1a2e] border border-white/10 rounded-xl sm:rounded-2xl p-4 sm:p-6 mt-4">
+          <h2 className="text-lg sm:text-xl font-bold mb-2">Track Your Income Sources</h2>
+          <p className="text-gray-400 text-xs sm:text-sm mb-4">
             For households with multiple incomes, add each person's paycheck info here.
           </p>
           <Button
@@ -132,99 +133,101 @@ export default function Home() {
               setEditingIncome(null);
               setShowIncomeForm(true);
             }}
-            className="w-full bg-lime-500 text-black font-bold hover:bg-lime-400 h-12 text-base"
+            className="w-full bg-lime-500 text-black font-bold hover:bg-lime-400 h-11 sm:h-12 text-sm sm:text-base"
           >
-            <Plus size={20} className="mr-2" />
+            <Plus size={18} className="mr-2" />
             Add Income
           </Button>
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 gap-4 mt-6">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 mt-4 sm:mt-6">
           {/* Monthly Bills */}
           <Link to={createPageUrl('Bills')}>
-            <div className="bg-[#1a1a2e] border border-white/10 rounded-2xl p-5 hover:bg-[#252538] transition-colors cursor-pointer">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="p-2 rounded-lg bg-pink-500/20">
-                  <Receipt className="text-pink-400" size={20} />
+            <div className="bg-[#1a1a2e] border border-white/10 rounded-xl sm:rounded-2xl p-3 sm:p-5 hover:bg-[#252538] transition-colors cursor-pointer">
+              <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+                <div className="p-1.5 sm:p-2 rounded-lg bg-pink-500/20">
+                  <Receipt className="text-pink-400" size={16} />
                 </div>
-                <span className="text-sm text-gray-400">Monthly Bills</span>
+                <span className="text-xs sm:text-sm text-gray-400">Monthly Bills</span>
               </div>
-              <p className="text-2xl font-black mb-1">${totalBills.toLocaleString()}</p>
-              <p className="text-xs text-gray-500">{bills.length} bills tracked</p>
+              <p className="text-xl sm:text-2xl font-black mb-1">${totalBills.toLocaleString()}</p>
+              <p className="text-xs text-gray-500">{bills.length} bills</p>
             </div>
           </Link>
 
           {/* Consumer Debt */}
           <Link to={createPageUrl('Debt')}>
-            <div className="bg-[#1a1a2e] border border-white/10 rounded-2xl p-5 hover:bg-[#252538] transition-colors cursor-pointer">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="p-2 rounded-lg bg-purple-500/20">
-                  <CreditCard className="text-purple-400" size={20} />
+            <div className="bg-[#1a1a2e] border border-white/10 rounded-xl sm:rounded-2xl p-3 sm:p-5 hover:bg-[#252538] transition-colors cursor-pointer">
+              <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+                <div className="p-1.5 sm:p-2 rounded-lg bg-purple-500/20">
+                  <CreditCard className="text-purple-400" size={16} />
                 </div>
-                <span className="text-sm text-gray-400">Consumer Debt</span>
+                <span className="text-xs sm:text-sm text-gray-400">Consumer Debt</span>
               </div>
-              <p className="text-2xl font-black mb-1">${totalDebts.toLocaleString()}</p>
-              <p className="text-xs text-gray-500">{debtProgress}% paid off</p>
+              <p className="text-xl sm:text-2xl font-black mb-1">${totalDebts.toLocaleString()}</p>
+              <p className="text-xs text-gray-500">{debtProgress}% off</p>
             </div>
           </Link>
 
           {/* Savings Goals */}
           <Link to={createPageUrl('Savings')}>
-            <div className="bg-[#1a1a2e] border border-white/10 rounded-2xl p-5 hover:bg-[#252538] transition-colors cursor-pointer">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="p-2 rounded-lg bg-lime-500/20">
-                  <PiggyBank className="text-lime-400" size={20} />
+            <div className="bg-[#1a1a2e] border border-white/10 rounded-xl sm:rounded-2xl p-3 sm:p-5 hover:bg-[#252538] transition-colors cursor-pointer">
+              <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+                <div className="p-1.5 sm:p-2 rounded-lg bg-lime-500/20">
+                  <PiggyBank className="text-lime-400" size={16} />
                 </div>
-                <span className="text-sm text-gray-400">Savings Goals</span>
+                <span className="text-xs sm:text-sm text-gray-400">Savings Goals</span>
               </div>
-              <p className="text-2xl font-black mb-1">${currentSavings.toLocaleString()}</p>
+              <p className="text-xl sm:text-2xl font-black mb-1">${currentSavings.toLocaleString()}</p>
               <p className="text-xs text-gray-500">{savingsProgress}% to goals</p>
             </div>
           </Link>
 
           {/* Next Payday */}
-          <div className="bg-[#1a1a2e] border border-white/10 rounded-2xl p-5">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="p-2 rounded-lg bg-green-500/20">
-                <Calendar className="text-green-400" size={20} />
+          <div className="bg-[#1a1a2e] border border-white/10 rounded-xl sm:rounded-2xl p-3 sm:p-5">
+            <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+              <div className="p-1.5 sm:p-2 rounded-lg bg-green-500/20">
+                <Calendar className="text-green-400" size={16} />
               </div>
-              <span className="text-sm text-gray-400">Next Payday</span>
+              <span className="text-xs sm:text-sm text-gray-400">Next Payday</span>
             </div>
-            <p className="text-2xl font-black mb-1">
-              {nextPayday ? new Date(nextPayday).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Not set'}
+            <p className="text-xl sm:text-2xl font-black mb-1">
+              {nextPayday ? new Date(nextPayday).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Not set'}
             </p>
-            <p className="text-xs text-gray-500">${expectedAmount.toLocaleString()} expected</p>
+            <p className="text-xs text-gray-500">${expectedAmount.toLocaleString()}</p>
           </div>
         </div>
 
         {/* Action Buttons */}
-        <div className="grid grid-cols-2 gap-4 mt-6">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 mt-4 sm:mt-6">
           <Link to={createPageUrl('Bills')}>
-            <Button variant="outline" className="w-full h-14 border-white/20 text-white hover:bg-white/10">
-              <Plus size={18} className="mr-2" />
+            <Button variant="outline" className="w-full h-12 sm:h-14 border-white/20 text-white hover:bg-white/10 text-sm sm:text-base">
+              <Plus size={16} className="mr-1 sm:mr-2" />
               Add Bill
             </Button>
           </Link>
           <Link to={createPageUrl('Debt')}>
-            <Button variant="outline" className="w-full h-14 border-white/20 text-white hover:bg-white/10">
-              <Plus size={18} className="mr-2" />
+            <Button variant="outline" className="w-full h-12 sm:h-14 border-white/20 text-white hover:bg-white/10 text-sm sm:text-base">
+              <Plus size={16} className="mr-1 sm:mr-2" />
               Add Debt
             </Button>
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 mt-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 mt-3 sm:mt-4">
           <Link to={createPageUrl('Savings')}>
-            <Button variant="outline" className="w-full h-14 border-white/20 text-white hover:bg-white/10">
-              <Plus size={18} className="mr-2" />
+            <Button variant="outline" className="w-full h-12 sm:h-14 border-white/20 text-white hover:bg-white/10 text-sm sm:text-base">
+              <Plus size={16} className="mr-1 sm:mr-2" />
               Add Goal
             </Button>
           </Link>
-          <Button className="w-full h-14 bg-lime-500 text-black font-bold hover:bg-lime-400">
-            Plan Payday
-            <ArrowRight size={18} className="ml-2" />
-          </Button>
+          <Link to={createPageUrl('Payday')}>
+            <Button className="w-full h-12 sm:h-14 bg-lime-500 text-black font-bold hover:bg-lime-400 text-sm sm:text-base">
+              Plan Payday
+              <ArrowRight size={16} className="ml-1 sm:ml-2" />
+            </Button>
+          </Link>
         </div>
       </div>
 
