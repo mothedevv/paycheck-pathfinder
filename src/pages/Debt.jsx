@@ -148,7 +148,8 @@ export default function Debt() {
               const Icon = getAssetIcon(asset.type);
               const linkedDebt = getLinkedDebt(asset.id);
               const equity = linkedDebt ? asset.current_value - linkedDebt.balance : asset.current_value;
-              const equityPercent = asset.purchase_price ? Math.round(((asset.current_value - asset.purchase_price) / asset.purchase_price) * 100) : 0;
+              const paidOffPercent = linkedDebt && linkedDebt.original_balance ? 
+                Math.round(((linkedDebt.original_balance - linkedDebt.balance) / linkedDebt.original_balance) * 100) : 0;
 
               return (
                 <div
@@ -200,11 +201,11 @@ export default function Debt() {
                       <span className="text-xl font-bold text-white">${equity.toLocaleString()}</span>
                     </div>
 
-                    {asset.purchase_price && equityPercent !== 0 && (
+                    {linkedDebt && paidOffPercent > 0 && (
                       <div className="flex items-center justify-between pt-2 border-t border-white/5">
-                        <span className="text-xs text-gray-500">Since purchase</span>
-                        <span className={`text-sm font-semibold ${equityPercent >= 0 ? 'text-lime-400' : 'text-red-400'}`}>
-                          {equityPercent >= 0 ? '↗' : '↘'} {Math.abs(equityPercent)}%
+                        <span className="text-xs text-gray-500">Paid off</span>
+                        <span className="text-sm font-semibold text-lime-400">
+                          {paidOffPercent}%
                         </span>
                       </div>
                     )}
