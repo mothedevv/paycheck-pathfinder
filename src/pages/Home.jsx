@@ -112,7 +112,8 @@ export default function Home() {
     { 
       type: 'car_loan', 
       label: 'Auto Loans',
-      amount: (() => {
+      amount: debts.filter(d => d.type === 'car_loan').reduce((sum, d) => sum + (d.balance || 0), 0),
+      percentPaid: (() => {
         const carDebts = debts.filter(d => d.type === 'car_loan' && d.balance > 0);
         if (carDebts.length === 0) return 0;
         const totalPaid = carDebts.reduce((sum, d) => sum + ((d.original_balance || d.balance) - d.balance), 0);
@@ -134,7 +135,8 @@ export default function Home() {
     { 
       type: 'mortgage', 
       label: 'Mortgages',
-      amount: (() => {
+      amount: debts.filter(d => d.type === 'mortgage').reduce((sum, d) => sum + (d.balance || 0), 0),
+      percentPaid: (() => {
         const mortgageDebts = debts.filter(d => d.type === 'mortgage' && d.balance > 0);
         if (mortgageDebts.length === 0) return 0;
         const totalPaid = mortgageDebts.reduce((sum, d) => sum + ((d.original_balance || d.balance) - d.balance), 0);
@@ -153,7 +155,7 @@ export default function Home() {
       icon: 'medical',
       showAsPercent: false
     }
-  ].filter(cat => cat.amount > 0 || (cat.showAsPercent && debts.some(d => d.type === cat.type && d.balance > 0)));
+  ].filter(cat => cat.amount > 0);
 
   const totalDebtAmount = debtCategories.reduce((sum, cat) => sum + cat.amount, 0);
 
@@ -337,10 +339,10 @@ export default function Home() {
                       {icons[category.icon]}
                     </div>
                     <span className="text-xs sm:text-sm text-gray-400 mb-2">{category.label}</span>
-                    <p className="text-xl sm:text-2xl font-black mb-1">
-                      {category.showAsPercent ? `${category.amount}%` : `$${category.amount.toLocaleString()}`}
+                    <p className="text-xl sm:text-2xl font-black mb-1">${category.amount.toLocaleString()}</p>
+                    <p className="text-xs text-gray-500">
+                      {category.showAsPercent ? `${category.percentPaid}% paid off` : 'debt'}
                     </p>
-                    <p className="text-xs text-gray-500">{category.showAsPercent ? 'paid off' : 'debt'}</p>
                   </div>
                 </div>
               </Link>
