@@ -558,6 +558,90 @@ export default function Payday() {
 
 
 
+        {/* Savings Bucket Allocation */}
+        <div className="mt-6">
+          <h3 className="text-lg font-bold mb-3 flex items-center gap-2">
+            <PiggyBank className="text-lime-400" size={18} />
+            Savings Allocation
+          </h3>
+
+          {/* Debt Payments */}
+          {debtsToAllocate.length > 0 && (
+            <div className="mb-4">
+              <p className="text-sm text-gray-400 mb-2">
+                Debt Payments ({debtStrategy === 'snowball' ? 'Snowball' : 'Avalanche'} Method)
+              </p>
+              <div className="space-y-2">
+                {debtsToAllocate.map(debt => (
+                  <div key={debt.id} className="bg-[#1a1a2e] border border-white/10 rounded-lg p-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-semibold text-white text-sm">{debt.name}</h4>
+                        <p className="text-xs text-gray-400">
+                          {debt.apr}% APR • Balance: ${debt.balance.toLocaleString()}
+                        </p>
+                      </div>
+                      <p className="text-lg font-bold text-lime-400">${debt.allocated.toFixed(2)}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Savings Goals */}
+          {goalsToAllocate.length > 0 && (
+            <div className="mb-4">
+              <p className="text-sm text-gray-400 mb-2">Savings Goals</p>
+              <div className="space-y-2">
+                {goalsToAllocate.map(goal => (
+                  <div key={goal.id} className="bg-[#1a1a2e] border border-white/10 rounded-lg p-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-semibold text-white text-sm">{goal.name}</h4>
+                        <p className="text-xs text-gray-400">
+                          ${goal.current_amount.toLocaleString()} / ${goal.target_amount.toLocaleString()}
+                        </p>
+                      </div>
+                      <p className="text-lg font-bold text-lime-400">${goal.allocated.toFixed(2)}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Savings Summary */}
+          {savingsAmount > 0 && (
+            <div className="bg-gradient-to-br from-lime-900/20 to-lime-950/10 border border-lime-500/30 rounded-lg p-3">
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs text-gray-300">Savings Bucket Total</p>
+                  <p className="text-lg font-bold text-white">${savingsAmount.toFixed(2)}</p>
+                </div>
+                {totalDebtAllocation > 0 && (
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-gray-300">To Debt Payments</p>
+                    <p className="text-base font-semibold text-red-400">-${totalDebtAllocation.toFixed(2)}</p>
+                  </div>
+                )}
+                {goalsToAllocate.length > 0 && (
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-gray-300">To Savings Goals</p>
+                    <p className="text-base font-semibold text-lime-400">-${goalsToAllocate.reduce((sum, g) => sum + g.allocated, 0).toFixed(2)}</p>
+                  </div>
+                )}
+                {savingsUnallocated > 0 && (
+                  <div className="border-t border-white/10 pt-1.5 flex items-center justify-between">
+                    <p className="text-xs text-gray-300">Unallocated</p>
+                    <p className="text-lg font-bold text-lime-400">${savingsUnallocated.toFixed(2)}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* One-Time Deposits */}
         <div className="mt-6">
           <div className="flex items-center justify-between mb-3">
