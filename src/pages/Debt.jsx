@@ -63,8 +63,7 @@ export default function Debt() {
                 setEditingAsset(null);
                 setShowAssetForm(true);
               }}
-              variant="outline" 
-              className="border-white/20 text-white hover:bg-white/10 h-9 sm:h-10 text-xs sm:text-sm px-2 sm:px-4"
+              className="bg-[#1a1a2e] border border-white/20 text-white hover:bg-[#252538] h-9 sm:h-10 text-xs sm:text-sm px-2 sm:px-4 font-semibold"
             >
               <Plus size={14} className="mr-1" />
               Asset
