@@ -104,8 +104,8 @@ export default function Payday() {
     return date;
   })();
   
-  // Get bills due before next payday (prioritize autopay and approaching late-by dates)
-  const billsDueNow = bills.filter(bill => {
+  // Get all bills that could be paid, sorted by priority
+  const billsByPriority = bills.filter(bill => {
     if (!bill.due_date) return false;
     const [year, month, day] = bill.due_date.split('-').map(Number);
     const dueDate = new Date(year, month - 1, day);
@@ -138,9 +138,22 @@ export default function Payday() {
     return aLateBy.localeCompare(bLateBy);
   });
 
-  // Calculate how much of bills bucket will be used
+  // Allocate bills bucket amount to as many bills as possible
+  let remainingBillsBucket = billsAmount;
+  const billsDueNow = [];
+  const billsSkipped = [];
+  
+  for (const bill of billsByPriority) {
+    if (remainingBillsBucket >= bill.amount) {
+      billsDueNow.push(bill);
+      remainingBillsBucket -= bill.amount;
+    } else {
+      billsSkipped.push(bill);
+    }
+  }
+
   const totalBillsDueAmount = billsDueNow.reduce((sum, b) => sum + (b.amount || 0), 0);
-  const billsUnallocated = Math.max(0, billsAmount - totalBillsDueAmount);
+  const billsUnallocated = remainingBillsBucket;
 
   // Calculate total unallocated for future bills (stays in HYSA)
   const totalBills = bills.reduce((sum, b) => sum + (b.amount || 0), 0);
