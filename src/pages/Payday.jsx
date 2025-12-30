@@ -74,12 +74,21 @@ export default function Payday() {
   const spendingAmount = budget ? (paycheckAmount * (budget.spending_percentage / 100)) : 0;
   const savingsAmount = budget ? (paycheckAmount * (budget.savings_percentage / 100)) : 0;
 
-  // Calculate bills due this paycheck
+  // Calculate bills due this paycheck (use local timezone)
   const today = new Date();
-  const paydayDate = nextPayday ? new Date(nextPayday) : today;
+  today.setHours(0, 0, 0, 0);
+  
+  const paydayDate = nextPayday ? (() => {
+    const [year, month, day] = nextPayday.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
+    date.setHours(23, 59, 59, 999);
+    return date;
+  })() : today;
+  
   const billsDueNow = bills.filter(bill => {
     if (!bill.due_date) return false;
-    const dueDate = new Date(bill.due_date);
+    const [year, month, day] = bill.due_date.split('-').map(Number);
+    const dueDate = new Date(year, month - 1, day);
     return dueDate >= today && dueDate <= paydayDate;
   });
 
@@ -106,8 +115,12 @@ export default function Payday() {
         was_autopay: bill.is_autopay
       }));
 
+      const [y, m, d] = nextPayday.split('-').map(Number);
+      const localPaydayDate = new Date(y, m - 1, d);
+      const paydayDateStr = `${localPaydayDate.getFullYear()}-${String(localPaydayDate.getMonth() + 1).padStart(2, '0')}-${String(localPaydayDate.getDate()).padStart(2, '0')}`;
+
       await base44.entities.PaydayHistory.create({
-        payday_date: paydayDate.toISOString().split('T')[0],
+        payday_date: paydayDateStr,
         paycheck_amount: paycheckAmount,
         bills_amount: billsAmount,
         spending_amount: spendingAmount,
@@ -123,14 +136,15 @@ export default function Payday() {
       for (const bill of billsDueNow) {
         await base44.entities.Bill.update(bill.id, {
           allocated_amount: (bill.allocated_amount || 0) + bill.amount,
-          last_allocated_date: paydayDate.toISOString().split('T')[0]
+          last_allocated_date: paydayDateStr
         });
       }
 
-      // Calculate next payday based on frequency
-      const nextPaydayDate = new Date(paydayDate);
+      // Calculate next payday based on frequency (using local timezone)
+      const [year, month, day] = nextPayday.split('-').map(Number);
+      const nextPaydayDate = new Date(year, month - 1, day);
       const frequency = primaryIncome.pay_frequency;
-      
+
       if (frequency === 'weekly') {
         nextPaydayDate.setDate(nextPaydayDate.getDate() + 7);
       } else if (frequency === 'biweekly') {
@@ -141,9 +155,13 @@ export default function Payday() {
         nextPaydayDate.setMonth(nextPaydayDate.getMonth() + 1);
       }
 
-      // Update income with next payday
+      // Update income with next payday (format in local timezone)
+      const yyyy = nextPaydayDate.getFullYear();
+      const mm = String(nextPaydayDate.getMonth() + 1).padStart(2, '0');
+      const dd = String(nextPaydayDate.getDate()).padStart(2, '0');
+
       await base44.entities.Income.update(primaryIncome.id, {
-        next_payday: nextPaydayDate.toISOString().split('T')[0]
+        next_payday: `${yyyy}-${mm}-${dd}`
       });
 
       // Refresh data
