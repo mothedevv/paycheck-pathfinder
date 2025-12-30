@@ -69,8 +69,9 @@ export default function Payday() {
   const paycheckAmount = primaryIncome?.paycheck_amount || 0;
   const payFrequency = primaryIncome?.pay_frequency || 'biweekly';
 
-  // Calculate bucket allocations
-  const billsAmount = budget ? (paycheckAmount * (budget.bills_percentage / 100)) : 0;
+  // Calculate bucket allocations (include carried forward balance)
+  const billsBucketBalance = budget?.bills_bucket_balance || 0;
+  const billsAmount = budget ? (paycheckAmount * (budget.bills_percentage / 100)) + billsBucketBalance : 0;
   const spendingAmount = budget ? (paycheckAmount * (budget.spending_percentage / 100)) : 0;
   const savingsAmount = budget ? (paycheckAmount * (budget.savings_percentage / 100)) : 0;
 
@@ -227,9 +228,15 @@ export default function Payday() {
         next_payday: `${yyyy}-${mm}-${dd}`
       });
 
+      // Update budget with new bills bucket balance
+      await base44.entities.UserBudget.update(budget.id, {
+        bills_bucket_balance: billsUnallocated
+      });
+
       // Refresh data
       queryClient.invalidateQueries({ queryKey: ['bills'] });
       queryClient.invalidateQueries({ queryKey: ['incomes'] });
+      queryClient.invalidateQueries({ queryKey: ['userBudget'] });
       
       alert('Payday marked complete! Next payday updated.');
     } catch (error) {
@@ -386,6 +393,12 @@ export default function Payday() {
         {/* Bills Bucket Summary */}
         <div className="mt-6 bg-gradient-to-br from-pink-900/20 to-pink-950/10 border border-pink-500/30 rounded-xl p-4">
           <div className="space-y-2">
+            {billsBucketBalance > 0 && (
+              <div className="flex items-center justify-between pb-2 border-b border-white/10">
+                <p className="text-sm text-gray-300">Previous Balance</p>
+                <p className="text-lg font-semibold text-purple-400">${billsBucketBalance.toFixed(2)}</p>
+              </div>
+            )}
             <div className="flex items-center justify-between">
               <p className="text-sm text-gray-300">Bills Bucket Total</p>
               <p className="text-xl font-bold text-white">${billsAmount.toFixed(2)}</p>
@@ -395,7 +408,7 @@ export default function Payday() {
               <p className="text-lg font-semibold text-pink-400">-${totalBillsDueAmount.toFixed(2)}</p>
             </div>
             <div className="border-t border-white/10 pt-2 flex items-center justify-between">
-              <p className="text-sm text-gray-300">Unallocated (Stays in HYSA)</p>
+              <p className="text-sm text-gray-300">Carries to Next Payday</p>
               <p className="text-xl font-bold text-lime-400">${billsUnallocated.toFixed(2)}</p>
             </div>
           </div>
