@@ -85,14 +85,64 @@ export default function Payday() {
     return date;
   })() : today;
   
+  // Calculate next payday for better range
+  const nextPaydayAfterThis = (() => {
+    if (!nextPayday) return null;
+    const [year, month, day] = nextPayday.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
+    const frequency = primaryIncome?.pay_frequency || 'biweekly';
+    
+    if (frequency === 'weekly') {
+      date.setDate(date.getDate() + 7);
+    } else if (frequency === 'biweekly') {
+      date.setDate(date.getDate() + 14);
+    } else if (frequency === 'semimonthly') {
+      date.setDate(date.getDate() + 15);
+    } else if (frequency === 'monthly') {
+      date.setMonth(date.getMonth() + 1);
+    }
+    return date;
+  })();
+  
+  // Get bills due before next payday (prioritize autopay and approaching late-by dates)
   const billsDueNow = bills.filter(bill => {
     if (!bill.due_date) return false;
     const [year, month, day] = bill.due_date.split('-').map(Number);
     const dueDate = new Date(year, month - 1, day);
+    
+    // Get late_by date if exists
+    const lateByDate = bill.late_by_date ? (() => {
+      const [y, m, d] = bill.late_by_date.split('-').map(Number);
+      return new Date(y, m - 1, d);
+    })() : dueDate;
+    
+    // Include if:
+    // 1. Autopay bills due before next payday after this one
+    // 2. Bills where late_by date is before next payday after this one
+    // 3. Regular bills due before next payday
+    if (bill.is_autopay && nextPaydayAfterThis && dueDate <= nextPaydayAfterThis) {
+      return true;
+    }
+    if (nextPaydayAfterThis && lateByDate <= nextPaydayAfterThis) {
+      return true;
+    }
     return dueDate >= today && dueDate <= paydayDate;
+  }).sort((a, b) => {
+    // Sort: autopay first, then by late_by date, then by due date
+    if (a.is_autopay && !b.is_autopay) return -1;
+    if (!a.is_autopay && b.is_autopay) return 1;
+    
+    const aLateBy = a.late_by_date || a.due_date;
+    const bLateBy = b.late_by_date || b.due_date;
+    
+    return aLateBy.localeCompare(bLateBy);
   });
 
-  // Calculate total unallocated for future bills
+  // Calculate how much of bills bucket will be used
+  const totalBillsDueAmount = billsDueNow.reduce((sum, b) => sum + (b.amount || 0), 0);
+  const billsUnallocated = Math.max(0, billsAmount - totalBillsDueAmount);
+
+  // Calculate total unallocated for future bills (stays in HYSA)
   const totalBills = bills.reduce((sum, b) => sum + (b.amount || 0), 0);
   const totalAllocated = bills.reduce((sum, b) => sum + (b.allocated_amount || 0), 0);
   const totalUnallocated = totalBills - totalAllocated;
@@ -128,7 +178,7 @@ export default function Payday() {
         bills_allocated: billsAllocatedData,
         debts_allocated: [],
         savings_goals_allocated: [],
-        bills_unallocated: 0,
+        bills_unallocated: billsUnallocated,
         savings_unallocated: 0
       });
 
@@ -305,6 +355,11 @@ export default function Payday() {
                           return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
                         })()}
                         {bill.is_autopay && <span className="ml-2 text-lime-400">• Auto-pay</span>}
+                        {bill.late_by_date && (() => {
+                          const [y, m, d] = bill.late_by_date.split('-').map(Number);
+                          const lateDate = new Date(y, m - 1, d);
+                          return <span className="ml-2 text-orange-400">• Late by {lateDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>;
+                        })()}
                       </p>
                     </div>
                     <p className="text-xl font-bold text-pink-400">${bill.amount.toFixed(2)}</p>
@@ -315,12 +370,30 @@ export default function Payday() {
           )}
         </div>
 
-        {/* Total Unallocated */}
-        <div className="mt-6 bg-gradient-to-br from-lime-900/20 to-lime-950/10 border border-lime-500/30 rounded-xl p-4">
+        {/* Bills Bucket Summary */}
+        <div className="mt-6 bg-gradient-to-br from-pink-900/20 to-pink-950/10 border border-pink-500/30 rounded-xl p-4">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-gray-300">Bills Bucket Total</p>
+              <p className="text-xl font-bold text-white">${billsAmount.toFixed(2)}</p>
+            </div>
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-gray-300">Paying Now</p>
+              <p className="text-lg font-semibold text-pink-400">-${totalBillsDueAmount.toFixed(2)}</p>
+            </div>
+            <div className="border-t border-white/10 pt-2 flex items-center justify-between">
+              <p className="text-sm text-gray-300">Unallocated (Stays in HYSA)</p>
+              <p className="text-xl font-bold text-lime-400">${billsUnallocated.toFixed(2)}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Total Unallocated for All Future Bills */}
+        <div className="mt-4 bg-gradient-to-br from-lime-900/20 to-lime-950/10 border border-lime-500/30 rounded-xl p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-300 mb-1">Total Unallocated (Future Bills)</p>
-              <p className="text-xs text-gray-500">Stays in HYSA for upcoming bills</p>
+              <p className="text-sm text-gray-300 mb-1">Total Saved for All Future Bills</p>
+              <p className="text-xs text-gray-500">All bills minus what's been allocated</p>
             </div>
             <p className="text-3xl font-black text-lime-400">${totalUnallocated.toFixed(2)}</p>
           </div>
