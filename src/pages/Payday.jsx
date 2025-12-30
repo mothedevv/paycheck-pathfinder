@@ -25,6 +25,7 @@ export default function Payday() {
   const [showDepositForm, setShowDepositForm] = useState(false);
   const [isCompleting, setIsCompleting] = useState(false);
   const [showBucketInfo, setShowBucketInfo] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   
   const queryClient = useQueryClient();
 
@@ -60,6 +61,15 @@ export default function Payday() {
     queryFn: async () => {
       const currentUser = await base44.auth.me();
       return base44.entities.OneTimeDeposit.filter({ created_by: currentUser.email, received: false });
+    },
+    refetchOnWindowFocus: false
+  });
+
+  const { data: paydayHistory = [] } = useQuery({
+    queryKey: ['paydayHistory'],
+    queryFn: async () => {
+      const currentUser = await base44.auth.me();
+      return base44.entities.PaydayHistory.filter({ created_by: currentUser.email }, '-payday_date', 10);
     },
     refetchOnWindowFocus: false
   });
@@ -238,6 +248,7 @@ export default function Payday() {
       queryClient.invalidateQueries({ queryKey: ['bills'] });
       queryClient.invalidateQueries({ queryKey: ['incomes'] });
       queryClient.invalidateQueries({ queryKey: ['userBudget'] });
+      queryClient.invalidateQueries({ queryKey: ['paydayHistory'] });
       
       alert('Payday marked complete! Next payday updated.');
     } catch (error) {
@@ -263,7 +274,11 @@ export default function Payday() {
               Payday<br />Planner
             </h1>
           </div>
-          <Button variant="outline" className="border-white/20 text-white hover:bg-white/10 h-9 sm:h-10 text-sm sm:text-base px-3 sm:px-4">
+          <Button 
+            onClick={() => setShowHistory(true)}
+            variant="outline" 
+            className="border-white/20 text-white hover:bg-white/10 h-9 sm:h-10 text-sm sm:text-base px-3 sm:px-4"
+          >
             History
           </Button>
         </div>
@@ -523,6 +538,92 @@ export default function Payday() {
           </div>
         </div>
       </div>
+
+      {/* History Modal */}
+      {showHistory && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="bg-[#1a1a2e] border border-white/10 rounded-xl max-w-2xl w-full p-6 my-8">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold">Payday History</h2>
+              <Button variant="ghost" size="icon" onClick={() => setShowHistory(false)}>
+                <X size={20} />
+              </Button>
+            </div>
+
+            {paydayHistory.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12">
+                <Calendar className="text-gray-600 mb-4" size={48} />
+                <p className="text-gray-400 text-center">No payday history yet</p>
+                <p className="text-gray-500 text-sm text-center mt-2">Complete your first payday to see history here</p>
+              </div>
+            ) : (
+              <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+                {paydayHistory.map(record => (
+                  <div key={record.id} className="bg-[#252538] border border-white/10 rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <div>
+                        <h3 className="font-semibold text-white">
+                          {(() => {
+                            const [y, m, d] = record.payday_date.split('-').map(Number);
+                            const date = new Date(y, m - 1, d);
+                            return date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+                          })()}
+                        </h3>
+                        <p className="text-sm text-gray-400">Paycheck: ${record.paycheck_amount.toLocaleString()}</p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-3 mb-3">
+                      <div className="bg-pink-900/20 border border-pink-500/30 rounded-lg p-2">
+                        <p className="text-xs text-pink-200 mb-1">Bills</p>
+                        <p className="text-sm font-bold text-white">${record.bills_amount.toFixed(2)}</p>
+                      </div>
+                      <div className="bg-purple-900/20 border border-purple-500/30 rounded-lg p-2">
+                        <p className="text-xs text-purple-200 mb-1">Spending</p>
+                        <p className="text-sm font-bold text-white">${record.spending_amount.toFixed(2)}</p>
+                      </div>
+                      <div className="bg-lime-900/20 border border-lime-500/30 rounded-lg p-2">
+                        <p className="text-xs text-lime-200 mb-1">Savings</p>
+                        <p className="text-sm font-bold text-white">${record.savings_amount.toFixed(2)}</p>
+                      </div>
+                    </div>
+
+                    {record.bills_allocated && record.bills_allocated.length > 0 && (
+                      <div className="border-t border-white/10 pt-3">
+                        <p className="text-xs text-gray-400 mb-2 font-semibold">Bills Paid</p>
+                        <div className="space-y-1">
+                          {record.bills_allocated.map((bill, idx) => (
+                            <div key={idx} className="flex items-center justify-between text-sm">
+                              <span className="text-gray-300">{bill.bill_name}</span>
+                              <span className="text-white font-semibold">${bill.amount_allocated.toFixed(2)}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {record.bills_unallocated > 0 && (
+                      <div className="border-t border-white/10 pt-2 mt-2">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-gray-400">Carried Forward</span>
+                          <span className="text-lime-400 font-semibold">${record.bills_unallocated.toFixed(2)}</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <Button
+              onClick={() => setShowHistory(false)}
+              className="w-full mt-6 bg-lime-500 text-black font-bold hover:bg-lime-400"
+            >
+              Close
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Bucket Info Modal */}
       {showBucketInfo && (
