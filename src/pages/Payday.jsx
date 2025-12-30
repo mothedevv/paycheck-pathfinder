@@ -138,21 +138,19 @@ export default function Payday() {
     return aLateBy.localeCompare(bLateBy);
   });
 
-  // Allocate bills bucket amount to as many bills as possible
+  // Allocate bills bucket amount to bills (allow partial payments)
   let remainingBillsBucket = billsAmount;
   const billsDueNow = [];
-  const billsSkipped = [];
   
   for (const bill of billsByPriority) {
-    if (remainingBillsBucket >= bill.amount) {
-      billsDueNow.push(bill);
-      remainingBillsBucket -= bill.amount;
-    } else {
-      billsSkipped.push(bill);
+    if (remainingBillsBucket > 0) {
+      const amountToAllocate = Math.min(remainingBillsBucket, bill.amount);
+      billsDueNow.push({ ...bill, allocatedAmount: amountToAllocate });
+      remainingBillsBucket -= amountToAllocate;
     }
   }
 
-  const totalBillsDueAmount = billsDueNow.reduce((sum, b) => sum + (b.amount || 0), 0);
+  const totalBillsDueAmount = billsDueNow.reduce((sum, b) => sum + (b.allocatedAmount || 0), 0);
   const billsUnallocated = remainingBillsBucket;
 
   // Calculate total unallocated for future bills (stays in HYSA)
@@ -173,7 +171,7 @@ export default function Payday() {
       const billsAllocatedData = billsDueNow.map(bill => ({
         bill_name: bill.name,
         amount_due: bill.amount,
-        amount_allocated: bill.amount,
+        amount_allocated: bill.allocatedAmount,
         due_date: bill.due_date,
         was_autopay: bill.is_autopay
       }));
@@ -198,7 +196,7 @@ export default function Payday() {
       // Update each bill's allocated amount
       for (const bill of billsDueNow) {
         await base44.entities.Bill.update(bill.id, {
-          allocated_amount: (bill.allocated_amount || 0) + bill.amount,
+          allocated_amount: (bill.allocated_amount || 0) + bill.allocatedAmount,
           last_allocated_date: paydayDateStr
         });
       }
@@ -359,7 +357,7 @@ export default function Payday() {
               {billsDueNow.map(bill => (
                 <div key={bill.id} className="bg-[#1a1a2e] border border-white/10 rounded-xl p-4">
                   <div className="flex items-center justify-between">
-                    <div>
+                    <div className="flex-1">
                       <h4 className="font-semibold text-white">{bill.name}</h4>
                       <p className="text-sm text-gray-400">
                         Due: {(() => {
@@ -375,7 +373,12 @@ export default function Payday() {
                         })()}
                       </p>
                     </div>
-                    <p className="text-xl font-bold text-pink-400">${bill.amount.toFixed(2)}</p>
+                    <div className="text-right">
+                      <p className="text-xl font-bold text-pink-400">${bill.allocatedAmount.toFixed(2)}</p>
+                      {bill.allocatedAmount < bill.amount && (
+                        <p className="text-xs text-orange-400">of ${bill.amount.toFixed(2)}</p>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
