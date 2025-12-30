@@ -253,30 +253,30 @@ export default function Home() {
           {/* Monthly Bills */}
           <Link to={createPageUrl('Bills')}>
             <div className="bg-[#1a1a2e] border border-white/10 rounded-xl sm:rounded-2xl p-3 sm:p-5 hover:bg-[#252538] transition-colors cursor-pointer">
-              <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-                <div className="p-1.5 sm:p-2 rounded-lg bg-pink-500/20">
+              <div className="flex flex-col items-center text-center">
+                <div className="p-1.5 sm:p-2 rounded-lg bg-pink-500/20 mb-2">
                   <Receipt className="text-pink-400" size={16} />
                 </div>
-                <span className="text-xs sm:text-sm text-gray-400">Monthly Bills</span>
+                <span className="text-xs sm:text-sm text-gray-400 mb-2">Monthly Bills</span>
+                <p className="text-xl sm:text-2xl font-black mb-1">${totalBills.toFixed(2)}</p>
+                <p className="text-xs text-gray-500">{bills.length} bills</p>
               </div>
-              <p className="text-xl sm:text-2xl font-black mb-1">${totalBills.toFixed(2)}</p>
-              <p className="text-xs text-gray-500">{bills.length} bills</p>
             </div>
           </Link>
 
           {/* Assets */}
           <Link to={createPageUrl('Debt')}>
             <div className="bg-[#1a1a2e] border border-white/10 rounded-xl sm:rounded-2xl p-3 sm:p-5 hover:bg-[#252538] transition-colors cursor-pointer">
-              <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-                <div className="p-1.5 sm:p-2 rounded-lg bg-emerald-500/20">
+              <div className="flex flex-col items-center text-center">
+                <div className="p-1.5 sm:p-2 rounded-lg bg-emerald-500/20 mb-2">
                   <svg className="text-emerald-400" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                   </svg>
                 </div>
-                <span className="text-xs sm:text-sm text-gray-400">Assets</span>
+                <span className="text-xs sm:text-sm text-gray-400 mb-2">Assets</span>
+                <p className="text-xl sm:text-2xl font-black mb-1">${totalAssets.toLocaleString()}</p>
+                <p className="text-xs text-gray-500">{assets.length} tracked</p>
               </div>
-              <p className="text-xl sm:text-2xl font-black mb-1">${totalAssets.toLocaleString()}</p>
-              <p className="text-xs text-gray-500">{assets.length} tracked</p>
             </div>
           </Link>
 
@@ -314,50 +314,62 @@ export default function Home() {
             return (
               <Link key={category.type} to={createPageUrl('Debt')}>
                 <div className="bg-[#1a1a2e] border border-white/10 rounded-xl sm:rounded-2xl p-3 sm:p-5 hover:bg-[#252538] transition-colors cursor-pointer">
-                  <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-                    <div className={`p-1.5 sm:p-2 rounded-lg ${colorClasses[category.color].bg}`}>
+                  <div className="flex flex-col items-center text-center">
+                    <div className={`p-1.5 sm:p-2 rounded-lg ${colorClasses[category.color].bg} mb-2`}>
                       {icons[category.icon]}
                     </div>
-                    <span className="text-xs sm:text-sm text-gray-400">{category.label}</span>
+                    <span className="text-xs sm:text-sm text-gray-400 mb-2">{category.label}</span>
+                    <p className="text-xl sm:text-2xl font-black mb-1">${category.amount.toLocaleString()}</p>
+                    <p className="text-xs text-gray-500">debt</p>
                   </div>
-                  <p className="text-xl sm:text-2xl font-black mb-1">${category.amount.toLocaleString()}</p>
-                  <p className="text-xs text-gray-500">debt</p>
                 </div>
               </Link>
             );
-          })}
+            })}
 
           {/* Savings Goals */}
           <Link to={createPageUrl('Savings')}>
             <div className="bg-[#1a1a2e] border border-white/10 rounded-xl sm:rounded-2xl p-3 sm:p-5 hover:bg-[#252538] transition-colors cursor-pointer">
-              <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-                <div className="p-1.5 sm:p-2 rounded-lg bg-lime-500/20">
+              <div className="flex flex-col items-center text-center">
+                <div className="p-1.5 sm:p-2 rounded-lg bg-lime-500/20 mb-2">
                   <PiggyBank className="text-lime-400" size={16} />
                 </div>
-                <span className="text-xs sm:text-sm text-gray-400">Savings Goals</span>
+                <span className="text-xs sm:text-sm text-gray-400 mb-2">Savings Goals</span>
+                <p className="text-xl sm:text-2xl font-black mb-1">${currentSavings.toLocaleString()}</p>
+                <p className="text-xs text-gray-500">{savingsProgress}% to goals</p>
               </div>
-              <p className="text-xl sm:text-2xl font-black mb-1">${currentSavings.toLocaleString()}</p>
-              <p className="text-xs text-gray-500">{savingsProgress}% to goals</p>
             </div>
           </Link>
 
           {/* Next Payday - flexible width */}
           <div className={isNextPaydayFullWidth ? "col-span-2" : ""}>
             <div className="bg-[#1a1a2e] border border-white/10 rounded-xl sm:rounded-2xl p-3 sm:p-5 hover:bg-[#252538] transition-colors cursor-pointer">
-              <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-                <div className="p-1.5 sm:p-2 rounded-lg bg-green-500/20">
+              <div className="flex flex-col items-center text-center">
+                <div className="p-1.5 sm:p-2 rounded-lg bg-green-500/20 mb-2">
                   <Calendar className="text-green-400" size={16} />
                 </div>
-                <span className="text-xs sm:text-sm text-gray-400">Next Payday</span>
+                <span className="text-xs sm:text-sm text-gray-400 mb-2">Next Payday</span>
+                <p className="text-xl sm:text-2xl font-black mb-1">
+                  {nextPayday ? (() => {
+                    const [y, m, d] = nextPayday.split('-').map(Number);
+                    const date = new Date(y, m - 1, d);
+                    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                  })() : 'Not set'}
+                </p>
+                <p className="text-xs text-gray-500">${expectedAmount.toLocaleString()}</p>
+                {isNextPaydayFullWidth && primaryIncome && (
+                  <div className="mt-3 pt-3 border-t border-white/10 w-full flex justify-center gap-8">
+                    <div className="text-center">
+                      <p className="text-xs text-gray-500 mb-1">Income Source</p>
+                      <p className="text-sm font-semibold text-white">{primaryIncome.name}</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-xs text-gray-500 mb-1">Frequency</p>
+                      <p className="text-sm font-semibold text-white capitalize">{payFrequency.replace('_', '-')}</p>
+                    </div>
+                  </div>
+                )}
               </div>
-              <p className="text-xl sm:text-2xl font-black mb-1">
-                {nextPayday ? (() => {
-                  const [y, m, d] = nextPayday.split('-').map(Number);
-                  const date = new Date(y, m - 1, d);
-                  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                })() : 'Not set'}
-              </p>
-              <p className="text-xs text-gray-500">${expectedAmount.toLocaleString()}</p>
             </div>
           </div>
           </div>
