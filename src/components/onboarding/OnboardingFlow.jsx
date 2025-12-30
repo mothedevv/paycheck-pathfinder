@@ -16,6 +16,7 @@ export default function OnboardingFlow({ onComplete }) {
   }]);
   const [totalBills, setTotalBills] = useState('');
   const [totalDebtPayments, setTotalDebtPayments] = useState('');
+  const [monthlySpending, setMonthlySpending] = useState('');
   const [loading, setLoading] = useState(false);
 
   const addIncome = () => {
@@ -53,6 +54,12 @@ export default function OnboardingFlow({ onComplete }) {
   const handleNextStep2 = () => {
     if (totalBills && parseFloat(totalBills) > 0) {
       setStep(3);
+    }
+  };
+
+  const handleNextStep3 = () => {
+    if (totalDebtPayments !== '') {
+      setStep(4);
     }
   };
 
@@ -322,11 +329,61 @@ export default function OnboardingFlow({ onComplete }) {
                   Back
                 </Button>
                 <Button
-                  onClick={handleComplete}
-                  disabled={loading || totalDebtPayments === ''}
+                  onClick={handleNextStep3}
+                  disabled={totalDebtPayments === ''}
                   className="flex-1 bg-lime-600 hover:bg-lime-500 text-black font-bold h-12 text-base"
                 >
-                  {loading ? 'Setting up...' : 'Finish Setup →'}
+                  Next: Monthly Spending →
+                </Button>
+              </div>
+            </div>
+          </>
+        )}
+
+        {step === 4 && (
+          <>
+            {/* Step 4: Monthly Spending */}
+            <div className="text-center mb-8">
+              <h1 className="text-3xl sm:text-4xl font-black mb-3">
+                How Much Do You Spend Monthly?
+              </h1>
+              <p className="text-gray-400 text-sm sm:text-base">
+                Food, gas, entertainment, shopping - your typical monthly spending.
+              </p>
+            </div>
+
+            <div className="bg-[#1a1a2e] border border-white/10 rounded-2xl p-4 sm:p-6">
+              <div className="mb-6">
+                <label className="text-sm text-gray-400 mb-2 block">Estimated Monthly Spending</label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg">$</span>
+                  <Input
+                    type="number"
+                    value={monthlySpending}
+                    onChange={(e) => setMonthlySpending(e.target.value)}
+                    placeholder="e.g., 1500"
+                    className="pl-10 bg-[#252538] border-white/10 text-white text-lg h-14"
+                  />
+                </div>
+                <p className="text-xs text-gray-400 mt-2">
+                  This includes groceries, gas, dining out, entertainment, clothes, etc.
+                </p>
+              </div>
+
+              <div className="flex gap-3">
+                <Button
+                  onClick={() => setStep(3)}
+                  variant="outline"
+                  className="border-white/20 text-white hover:bg-white/10 h-12"
+                >
+                  Back
+                </Button>
+                <Button
+                  onClick={handleComplete}
+                  disabled={loading || !monthlySpending || parseFloat(monthlySpending) <= 0}
+                  className="flex-1 bg-lime-600 hover:bg-lime-500 text-black font-bold h-12 text-base"
+                >
+                  {loading ? 'Setting up...' : 'Next: Savings Goals →'}
                 </Button>
               </div>
             </div>
