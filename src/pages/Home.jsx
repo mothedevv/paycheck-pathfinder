@@ -86,15 +86,15 @@ export default function Home() {
 
   // Calculate totals
   const totalBills = bills.reduce((sum, b) => sum + (b.amount || 0), 0);
-  const totalDebts = debts.reduce((sum, d) => sum + (d.balance || 0), 0);
   const totalAssets = assets.reduce((sum, a) => sum + (a.current_value || 0), 0);
   const totalSavingsGoals = savingsGoals.reduce((sum, g) => sum + (g.target_amount || 0), 0);
   const currentSavings = savingsGoals.reduce((sum, g) => sum + (g.current_amount || 0), 0);
   const savingsProgress = totalSavingsGoals > 0 ? Math.round((currentSavings / totalSavingsGoals) * 100) : 0;
 
-  // Calculate debt payoff percentage
-  const totalOriginalDebt = debts.reduce((sum, d) => sum + (d.original_balance || d.balance || 0), 0);
-  const debtProgress = totalOriginalDebt > 0 ? Math.round(((totalOriginalDebt - totalDebts) / totalOriginalDebt) * 100) : 0;
+  // Split debts by type
+  const creditCardDebt = debts.filter(d => d.type === 'credit_card').reduce((sum, d) => sum + (d.balance || 0), 0);
+  const personalLoansDebt = debts.filter(d => ['personal_loan', 'student_loan', 'medical', 'other'].includes(d.type)).reduce((sum, d) => sum + (d.balance || 0), 0);
+  const assetDebt = debts.filter(d => ['mortgage', 'car_loan'].includes(d.type)).reduce((sum, d) => sum + (d.balance || 0), 0);
 
   // Get next payday
   const primaryIncome = incomes.find(i => i.is_primary) || incomes[0];
@@ -233,17 +233,49 @@ export default function Home() {
             </div>
           </Link>
 
-          {/* Consumer Debt */}
+          {/* Credit Cards */}
+          <Link to={createPageUrl('Debt')}>
+            <div className="bg-[#1a1a2e] border border-white/10 rounded-xl sm:rounded-2xl p-3 sm:p-5 hover:bg-[#252538] transition-colors cursor-pointer">
+              <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+                <div className="p-1.5 sm:p-2 rounded-lg bg-purple-500/20">
+                  <CreditCard className="text-purple-400" size={16} />
+                </div>
+                <span className="text-xs sm:text-sm text-gray-400">Credit Cards</span>
+              </div>
+              <p className="text-xl sm:text-2xl font-black mb-1">${creditCardDebt.toLocaleString()}</p>
+              <p className="text-xs text-gray-500">debt</p>
+            </div>
+          </Link>
+
+          {/* Personal Loans */}
+          <Link to={createPageUrl('Debt')}>
+            <div className="bg-[#1a1a2e] border border-white/10 rounded-xl sm:rounded-2xl p-3 sm:p-5 hover:bg-[#252538] transition-colors cursor-pointer">
+              <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+                <div className="p-1.5 sm:p-2 rounded-lg bg-orange-500/20">
+                  <svg className="text-orange-400" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <span className="text-xs sm:text-sm text-gray-400">Personal Loans</span>
+              </div>
+              <p className="text-xl sm:text-2xl font-black mb-1">${personalLoansDebt.toLocaleString()}</p>
+              <p className="text-xs text-gray-500">debt</p>
+            </div>
+          </Link>
+
+          {/* Asset Debt */}
           <Link to={createPageUrl('Debt')}>
             <div className="bg-[#1a1a2e] border border-white/10 rounded-xl sm:rounded-2xl p-3 sm:p-5 hover:bg-[#252538] transition-colors cursor-pointer">
               <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
                 <div className="p-1.5 sm:p-2 rounded-lg bg-red-500/20">
-                  <CreditCard className="text-red-400" size={16} />
+                  <svg className="text-red-400" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
                 </div>
-                <span className="text-xs sm:text-sm text-gray-400">Consumer Debt</span>
+                <span className="text-xs sm:text-sm text-gray-400">Asset Debt</span>
               </div>
-              <p className="text-xl sm:text-2xl font-black mb-1">${totalDebts.toLocaleString()}</p>
-              <p className="text-xs text-gray-500">{debtProgress}% paid off</p>
+              <p className="text-xl sm:text-2xl font-black mb-1">${assetDebt.toLocaleString()}</p>
+              <p className="text-xs text-gray-500">mortgages & loans</p>
             </div>
           </Link>
 
