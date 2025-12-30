@@ -118,8 +118,7 @@ export default function Home() {
           </div>
           <Link to={createPageUrl('Settings')}>
             <Button 
-              variant="outline" 
-              className="border-white/20 text-white hover:bg-white/10 flex items-center gap-1 text-xs sm:text-sm h-9 sm:h-10 px-2 sm:px-4"
+              className="bg-[#1a1a2e] border border-white/20 text-white hover:bg-[#252538] flex items-center gap-1 text-xs sm:text-sm h-9 sm:h-10 px-2 sm:px-4 font-semibold"
             >
               <Settings size={14} className="sm:w-4 sm:h-4" />
               <span className="hidden sm:inline">Edit Buckets</span>
