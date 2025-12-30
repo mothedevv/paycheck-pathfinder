@@ -267,7 +267,7 @@ export default function Payday() {
               </p>
             </div>
             <a 
-              href="https://www.bestonlinebankingaccounts.com/savings-accounts?utm_source=google&kw=hysa&sk=hysa&c=763954045116&t=search&p=&m=p&dev=c&network=g&campaignid=22797476600&devmod=&mobval=0&groupid=189346055744&targetid=kwd-397654877469&interest=&physical=9198656&feedid=&eid=&a=&topic=Savings&ctype=&camtype=ps&ts=hysa&tt=&niche=&exp=&pq=&dyn=&gad_source=1&gad_campaignid=22797476600&gbraid=0AAAAAqqwASYuy2_JU3rVpRtQfW7bDfl-7&gclid=Cj0KCQiA6sjKBhCSARIsAJvYcpPdluODXr8UXz4TwHsJmMJSTkUHPFaIHzckxvmq5GYomCwRrqJlDWsaApVBEALw_wcB"
+              href="https://www.fool.com/money/banks/landing/best-high-yield-savings-accounts/?advertisingadgroupid=168782235003&advertisingadgroupname=ta-bank-co-adw-na-savings-5-troas-broad&advertisingcampaignid=21829166860&campaign_group=662651367332&gad_campaignid=21829166860&gad_source=1&gbraid=0AAAAAC-fZv4PHmXsgSby5G5DMe_FvqN7y&gclid=Cj0KCQiA6sjKBhCSARIsAJvYcpPCyCAizq-KvIuyxsgqPaeyqxxfJpGO3JBffRSxNSSUO4Xs2B-uOcgaAorrEALw_wcB&publisher=ta-bank-co-adw-na-savings-5-troas-broad&utm_medium=cpc&utm_source=google&testId=ta-bank-hysa&cellId=1&campaign=the-ascent&source_system_name=fool_splitter"
               target="_blank"
               rel="noopener noreferrer"
             >
