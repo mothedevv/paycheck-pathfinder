@@ -256,10 +256,10 @@ export default function Home() {
               <span className="text-xs text-gray-400">Savings</span>
             </Link>
 
-            <div className="flex flex-col items-center gap-1">
+            <Link to={createPageUrl('Payday')} className="flex flex-col items-center gap-1">
               <Calendar className="w-6 h-6 text-gray-400" />
               <span className="text-xs text-gray-400">Payday</span>
-            </div>
+            </Link>
           </div>
         </div>
       </div>
