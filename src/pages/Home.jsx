@@ -72,12 +72,22 @@ export default function Home() {
     refetchOnWindowFocus: false
   });
 
+  const { data: assets = [] } = useQuery({
+    queryKey: ['assets'],
+    queryFn: async () => {
+      const currentUser = await base44.auth.me();
+      return base44.entities.Asset.filter({ created_by: currentUser.email });
+    },
+    refetchOnWindowFocus: false
+  });
+
   const budget = budgets[0];
   const [saying] = useState(() => quirkySayings[Math.floor(Math.random() * quirkySayings.length)]);
 
   // Calculate totals
   const totalBills = bills.reduce((sum, b) => sum + (b.amount || 0), 0);
   const totalDebts = debts.reduce((sum, d) => sum + (d.balance || 0), 0);
+  const totalAssets = assets.reduce((sum, a) => sum + (a.current_value || 0), 0);
   const totalSavingsGoals = savingsGoals.reduce((sum, g) => sum + (g.target_amount || 0), 0);
   const currentSavings = savingsGoals.reduce((sum, g) => sum + (g.current_amount || 0), 0);
   const savingsProgress = totalSavingsGoals > 0 ? Math.round((currentSavings / totalSavingsGoals) * 100) : 0;
@@ -207,17 +217,33 @@ export default function Home() {
             </div>
           </Link>
 
+          {/* Assets */}
+          <Link to={createPageUrl('Debt')}>
+            <div className="bg-[#1a1a2e] border border-white/10 rounded-xl sm:rounded-2xl p-3 sm:p-5 hover:bg-[#252538] transition-colors cursor-pointer">
+              <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+                <div className="p-1.5 sm:p-2 rounded-lg bg-emerald-500/20">
+                  <svg className="text-emerald-400" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                  </svg>
+                </div>
+                <span className="text-xs sm:text-sm text-gray-400">Assets</span>
+              </div>
+              <p className="text-xl sm:text-2xl font-black mb-1">${totalAssets.toLocaleString()}</p>
+              <p className="text-xs text-gray-500">{assets.length} tracked</p>
+            </div>
+          </Link>
+
           {/* Consumer Debt */}
           <Link to={createPageUrl('Debt')}>
             <div className="bg-[#1a1a2e] border border-white/10 rounded-xl sm:rounded-2xl p-3 sm:p-5 hover:bg-[#252538] transition-colors cursor-pointer">
               <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-                <div className="p-1.5 sm:p-2 rounded-lg bg-purple-500/20">
-                  <CreditCard className="text-purple-400" size={16} />
+                <div className="p-1.5 sm:p-2 rounded-lg bg-red-500/20">
+                  <CreditCard className="text-red-400" size={16} />
                 </div>
                 <span className="text-xs sm:text-sm text-gray-400">Consumer Debt</span>
               </div>
               <p className="text-xl sm:text-2xl font-black mb-1">${totalDebts.toLocaleString()}</p>
-              <p className="text-xs text-gray-500">{debtProgress}% off</p>
+              <p className="text-xs text-gray-500">{debtProgress}% paid off</p>
             </div>
           </Link>
 
@@ -234,20 +260,24 @@ export default function Home() {
               <p className="text-xs text-gray-500">{savingsProgress}% to goals</p>
             </div>
           </Link>
+        </div>
 
-          {/* Next Payday */}
-          <div className="bg-[#1a1a2e] border border-white/10 rounded-xl sm:rounded-2xl p-3 sm:p-5">
-            <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-              <div className="p-1.5 sm:p-2 rounded-lg bg-green-500/20">
-                <Calendar className="text-green-400" size={16} />
-              </div>
-              <span className="text-xs sm:text-sm text-gray-400">Next Payday</span>
+        {/* Next Payday */}
+        <div className="bg-[#1a1a2e] border border-white/10 rounded-xl sm:rounded-2xl p-3 sm:p-5 mt-3 sm:mt-4">
+          <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+            <div className="p-1.5 sm:p-2 rounded-lg bg-green-500/20">
+              <Calendar className="text-green-400" size={16} />
             </div>
-            <p className="text-xl sm:text-2xl font-black mb-1">
-              {nextPayday ? new Date(nextPayday).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Not set'}
-            </p>
-            <p className="text-xs text-gray-500">${expectedAmount.toLocaleString()}</p>
+            <span className="text-xs sm:text-sm text-gray-400">Next Payday</span>
           </div>
+          <p className="text-xl sm:text-2xl font-black mb-1">
+            {nextPayday ? (() => {
+              const [y, m, d] = nextPayday.split('-').map(Number);
+              const date = new Date(y, m - 1, d);
+              return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            })() : 'Not set'}
+          </p>
+          <p className="text-xs text-gray-500">${expectedAmount.toLocaleString()}</p>
         </div>
 
         {/* Action Buttons */}
