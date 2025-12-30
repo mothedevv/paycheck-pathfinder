@@ -59,6 +59,24 @@ export default function Payday() {
     refetchOnWindowFocus: false
   });
 
+  const { data: debts = [] } = useQuery({
+    queryKey: ['debts'],
+    queryFn: async () => {
+      const currentUser = await base44.auth.me();
+      return base44.entities.Debt.filter({ created_by: currentUser.email });
+    },
+    refetchOnWindowFocus: false
+  });
+
+  const { data: savingsGoals = [] } = useQuery({
+    queryKey: ['savingsGoals'],
+    queryFn: async () => {
+      const currentUser = await base44.auth.me();
+      return base44.entities.SavingsGoal.filter({ created_by: currentUser.email });
+    },
+    refetchOnWindowFocus: false
+  });
+
   const { data: oneTimeDeposits = [] } = useQuery({
     queryKey: ['oneTimeDeposits'],
     queryFn: async () => {
@@ -170,6 +188,58 @@ export default function Payday() {
   const totalBillsDueAmount = billsDueNow.reduce((sum, b) => sum + (b.amount || 0), 0);
   const billsUnallocated = remainingBillsBucket;
 
+  // Allocate savings bucket to debts and goals
+  const debtStrategy = budget?.debt_strategy || 'avalanche';
+  const sortedDebts = [...debts].filter(d => d.balance > 0).sort((a, b) => {
+    if (debtStrategy === 'snowball') {
+      return a.balance - b.balance; // Smallest balance first
+    } else {
+      return b.apr - a.apr; // Highest APR first
+    }
+  });
+
+  let remainingSavingsBucket = savingsAmount;
+  const debtsToAllocate = [];
+  
+  // First, pay minimum payments
+  for (const debt of sortedDebts) {
+    const minPayment = debt.minimum_payment || 0;
+    if (remainingSavingsBucket >= minPayment) {
+      debtsToAllocate.push({ ...debt, allocated: minPayment });
+      remainingSavingsBucket -= minPayment;
+    } else {
+      debtsToAllocate.push({ ...debt, allocated: remainingSavingsBucket });
+      remainingSavingsBucket = 0;
+      break;
+    }
+  }
+
+  // Then, apply extra to first debt in strategy order
+  if (remainingSavingsBucket > 0 && debtsToAllocate.length > 0) {
+    debtsToAllocate[0].allocated += remainingSavingsBucket;
+    remainingSavingsBucket = 0;
+  }
+
+  const totalDebtAllocation = debtsToAllocate.reduce((sum, d) => sum + d.allocated, 0);
+  const savingsGoalsAllocation = remainingSavingsBucket;
+  
+  // Split remaining among goals by priority
+  const sortedGoals = [...savingsGoals].filter(g => g.current_amount < g.target_amount).sort((a, b) => a.priority - b.priority);
+  const goalsToAllocate = [];
+  let remainingForGoals = savingsGoalsAllocation;
+  
+  for (const goal of sortedGoals) {
+    const needed = goal.target_amount - goal.current_amount;
+    const toAllocate = Math.min(needed, remainingForGoals);
+    if (toAllocate > 0) {
+      goalsToAllocate.push({ ...goal, allocated: toAllocate });
+      remainingForGoals -= toAllocate;
+    }
+    if (remainingForGoals <= 0) break;
+  }
+
+  const savingsUnallocated = remainingForGoals;
+
   // Calculate total unallocated for future bills (stays in HYSA)
   const totalBills = bills.reduce((sum, b) => sum + (b.amount || 0), 0);
   const totalAllocated = bills.reduce((sum, b) => sum + (b.allocated_amount || 0), 0);
@@ -193,6 +263,17 @@ export default function Payday() {
         was_autopay: bill.is_autopay
       }));
 
+      const debtsAllocatedData = debtsToAllocate.map(debt => ({
+        debt_name: debt.name,
+        amount_allocated: debt.allocated,
+        apr: debt.apr
+      }));
+
+      const savingsGoalsAllocatedData = goalsToAllocate.map(goal => ({
+        goal_name: goal.name,
+        amount_allocated: goal.allocated
+      }));
+
       const [y, m, d] = nextPayday.split('-').map(Number);
       const localPaydayDate = new Date(y, m - 1, d);
       const paydayDateStr = `${localPaydayDate.getFullYear()}-${String(localPaydayDate.getMonth() + 1).padStart(2, '0')}-${String(localPaydayDate.getDate()).padStart(2, '0')}`;
@@ -204,10 +285,10 @@ export default function Payday() {
         spending_amount: spendingAmount,
         savings_amount: savingsAmount,
         bills_allocated: billsAllocatedData,
-        debts_allocated: [],
-        savings_goals_allocated: [],
+        debts_allocated: debtsAllocatedData,
+        savings_goals_allocated: savingsGoalsAllocatedData,
         bills_unallocated: billsUnallocated,
-        savings_unallocated: 0
+        savings_unallocated: savingsUnallocated
       });
 
       // Update each bill's allocated amount
@@ -215,6 +296,20 @@ export default function Payday() {
         await base44.entities.Bill.update(bill.id, {
           allocated_amount: (bill.allocated_amount || 0) + bill.amount,
           last_allocated_date: paydayDateStr
+        });
+      }
+
+      // Update debts
+      for (const debt of debtsToAllocate) {
+        await base44.entities.Debt.update(debt.id, {
+          balance: Math.max(0, debt.balance - debt.allocated)
+        });
+      }
+
+      // Update savings goals
+      for (const goal of goalsToAllocate) {
+        await base44.entities.SavingsGoal.update(goal.id, {
+          current_amount: (goal.current_amount || 0) + goal.allocated
         });
       }
 
@@ -252,6 +347,8 @@ export default function Payday() {
       queryClient.invalidateQueries({ queryKey: ['incomes'] });
       queryClient.invalidateQueries({ queryKey: ['userBudget'] });
       queryClient.invalidateQueries({ queryKey: ['paydayHistory'] });
+      queryClient.invalidateQueries({ queryKey: ['debts'] });
+      queryClient.invalidateQueries({ queryKey: ['savingsGoals'] });
       
       alert('Payday marked complete! Next payday updated.');
     } catch (error) {
@@ -618,11 +715,48 @@ export default function Payday() {
                       </div>
                     )}
 
+                    {record.debts_allocated && record.debts_allocated.length > 0 && (
+                      <div className="border-t border-white/10 pt-3 mt-3">
+                        <p className="text-xs text-gray-400 mb-2 font-semibold">Debt Payments</p>
+                        <div className="space-y-1">
+                          {record.debts_allocated.map((debt, idx) => (
+                            <div key={idx} className="flex items-center justify-between text-sm">
+                              <span className="text-gray-300">{debt.debt_name}</span>
+                              <span className="text-white font-semibold">${debt.amount_allocated.toFixed(2)}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {record.savings_goals_allocated && record.savings_goals_allocated.length > 0 && (
+                      <div className="border-t border-white/10 pt-3 mt-3">
+                        <p className="text-xs text-gray-400 mb-2 font-semibold">Savings Goals</p>
+                        <div className="space-y-1">
+                          {record.savings_goals_allocated.map((goal, idx) => (
+                            <div key={idx} className="flex items-center justify-between text-sm">
+                              <span className="text-gray-300">{goal.goal_name}</span>
+                              <span className="text-white font-semibold">${goal.amount_allocated.toFixed(2)}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
                     {record.bills_unallocated > 0 && (
                       <div className="border-t border-white/10 pt-2 mt-2">
                         <div className="flex items-center justify-between text-sm">
-                          <span className="text-gray-400">Carried Forward</span>
+                          <span className="text-gray-400">Bills Carried Forward</span>
                           <span className="text-lime-400 font-semibold">${record.bills_unallocated.toFixed(2)}</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {record.savings_unallocated > 0 && (
+                      <div className="border-t border-white/10 pt-2 mt-2">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-gray-400">Savings Unallocated</span>
+                          <span className="text-lime-400 font-semibold">${record.savings_unallocated.toFixed(2)}</span>
                         </div>
                       </div>
                     )}
