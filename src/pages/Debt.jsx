@@ -200,15 +200,6 @@ export default function Debt() {
                       <span className="text-sm text-gray-400">Equity</span>
                       <span className="text-xl font-bold text-white">${equity.toLocaleString()}</span>
                     </div>
-
-                    {linkedDebt && asset.purchase_price && (
-                      <div className="flex items-center justify-between pt-2 border-t border-white/5">
-                        <span className="text-xs text-gray-500">Paid off</span>
-                        <span className="text-sm font-semibold text-lime-400">
-                          {paidOffPercent}%
-                        </span>
-                      </div>
-                    )}
                   </div>
                 </div>
               );
@@ -235,8 +226,9 @@ export default function Debt() {
             <div className="space-y-3">
               {debts.map(debt => {
                 const linkedAsset = getLinkedAsset(debt.id);
-                const paidOffPercent = debt.original_balance ? 
-                  Math.round(((debt.original_balance - debt.balance) / debt.original_balance) * 100) : 0;
+                const purchasePrice = linkedAsset?.purchase_price || debt.original_balance;
+                const paidOffPercent = purchasePrice ? 
+                  Math.round(((purchasePrice - debt.balance) / purchasePrice) * 100) : 0;
 
                 return (
                   <div
@@ -281,7 +273,7 @@ export default function Debt() {
                         <span className="text-gray-500">Due Day</span>
                         <span className="text-gray-300">{debt.due_day}</span>
                       </div>
-                      {debt.original_balance && (
+                      {(linkedAsset?.purchase_price || debt.original_balance) && (
                         <div className="flex items-center justify-between pt-2 border-t border-white/5">
                           <span className="text-xs text-gray-500">Paid off</span>
                           <span className="text-sm font-semibold text-lime-400">
