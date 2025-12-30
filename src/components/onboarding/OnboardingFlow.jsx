@@ -14,6 +14,7 @@ export default function OnboardingFlow({ onComplete }) {
     pay_frequency: 'biweekly',
     is_primary: true
   }]);
+  const [totalBills, setTotalBills] = useState('');
   const [loading, setLoading] = useState(false);
 
   const addIncome = () => {
@@ -37,13 +38,19 @@ export default function OnboardingFlow({ onComplete }) {
     setIncomes(newIncomes);
   };
 
-  const handleNext = async () => {
+  const handleNextStep1 = () => {
     // Validate at least one income with required fields
     const hasValidIncome = incomes.some(inc => 
       inc.name && inc.paycheck_amount && parseFloat(inc.paycheck_amount) > 0
     );
     
-    if (!hasValidIncome) return;
+    if (hasValidIncome) {
+      setStep(2);
+    }
+  };
+
+  const handleComplete = async () => {
+    if (!totalBills || parseFloat(totalBills) <= 0) return;
 
     setLoading(true);
     try {
@@ -106,23 +113,25 @@ export default function OnboardingFlow({ onComplete }) {
   return (
     <div className="min-h-screen bg-[#0d0d1a] text-white flex items-center justify-center px-4 py-8">
       <div className="max-w-md w-full">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="flex justify-center mb-4">
-            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-lime-700 to-lime-900 flex items-center justify-center">
-              <Calculator size={40} className="text-lime-400" />
+        {step === 1 ? (
+          <>
+            {/* Header */}
+            <div className="text-center mb-8">
+              <div className="flex justify-center mb-4">
+                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-lime-700 to-lime-900 flex items-center justify-center">
+                  <Calculator size={40} className="text-lime-400" />
+                </div>
+              </div>
+              <h1 className="text-3xl sm:text-4xl font-black mb-3">
+                Let's Figure This Sh*t Out
+              </h1>
+              <p className="text-gray-400 text-sm sm:text-base">
+                Time to take control of your money. No more guessing.
+              </p>
             </div>
-          </div>
-          <h1 className="text-3xl sm:text-4xl font-black mb-3">
-            Let's Figure This Sh*t Out
-          </h1>
-          <p className="text-gray-400 text-sm sm:text-base">
-            Time to take control of your money. No more guessing.
-          </p>
-        </div>
 
-        {/* Income Sources Section */}
-        <div className="bg-[#1a1a2e] border border-white/10 rounded-2xl p-4 sm:p-6">
+            {/* Income Sources Section */}
+            <div className="bg-[#1a1a2e] border border-white/10 rounded-2xl p-4 sm:p-6">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="text-lg font-bold">Income Sources</h2>
@@ -207,15 +216,65 @@ export default function OnboardingFlow({ onComplete }) {
             ))}
           </div>
 
-          {/* Next Button */}
-          <Button
-            onClick={handleNext}
-            disabled={loading || !incomes.some(inc => inc.name && inc.paycheck_amount && parseFloat(inc.paycheck_amount) > 0)}
-            className="w-full mt-6 bg-lime-600 hover:bg-lime-500 text-black font-bold h-12 text-base"
-          >
-            {loading ? 'Setting up...' : 'Next: Add Your Bills →'}
-          </Button>
-        </div>
+              {/* Next Button */}
+              <Button
+                onClick={handleNextStep1}
+                disabled={!incomes.some(inc => inc.name && inc.paycheck_amount && parseFloat(inc.paycheck_amount) > 0)}
+                className="w-full mt-6 bg-lime-600 hover:bg-lime-500 text-black font-bold h-12 text-base"
+              >
+                Next: Add Your Bills →
+              </Button>
+            </div>
+          </>
+        ) : (
+          <>
+            {/* Step 2: Monthly Bills */}
+            <div className="text-center mb-8">
+              <h1 className="text-3xl sm:text-4xl font-black mb-3">
+                What Are Your Monthly Bills?
+              </h1>
+              <p className="text-gray-400 text-sm sm:text-base">
+                Let's figure out your fixed expenses so we can calculate your budget.
+              </p>
+            </div>
+
+            <div className="bg-[#1a1a2e] border border-white/10 rounded-2xl p-4 sm:p-6">
+              <div className="mb-6">
+                <label className="text-sm text-gray-400 mb-2 block">Rough Total (Monthly)</label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg">$</span>
+                  <Input
+                    type="number"
+                    value={totalBills}
+                    onChange={(e) => setTotalBills(e.target.value)}
+                    placeholder="2000"
+                    className="pl-10 bg-[#252538] border-white/10 text-white text-lg h-14"
+                  />
+                </div>
+                <p className="text-xs text-gray-400 mt-2">
+                  Don't stress the details—you can add individual bills later on the Bills page.
+                </p>
+              </div>
+
+              <div className="flex gap-3">
+                <Button
+                  onClick={() => setStep(1)}
+                  variant="outline"
+                  className="border-white/20 text-white hover:bg-white/10 h-12"
+                >
+                  Back
+                </Button>
+                <Button
+                  onClick={handleComplete}
+                  disabled={loading || !totalBills || parseFloat(totalBills) <= 0}
+                  className="flex-1 bg-lime-600 hover:bg-lime-500 text-black font-bold h-12 text-base"
+                >
+                  {loading ? 'Setting up...' : 'Next: Add Debt →'}
+                </Button>
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
