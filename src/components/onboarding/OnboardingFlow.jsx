@@ -16,7 +16,7 @@ export default function OnboardingFlow({ onComplete }) {
   }]);
   const [totalBills, setTotalBills] = useState('');
   const [totalDebtPayments, setTotalDebtPayments] = useState('');
-  const [monthlySpending, setMonthlySpending] = useState('');
+  const [savingsGoalAmount, setSavingsGoalAmount] = useState('');
   const [loading, setLoading] = useState(false);
 
   const addIncome = () => {
@@ -333,7 +333,7 @@ export default function OnboardingFlow({ onComplete }) {
                   disabled={totalDebtPayments === ''}
                   className="flex-1 bg-lime-600 hover:bg-lime-500 text-black font-bold h-12 text-base"
                 >
-                  Next: Monthly Spending →
+                  Next: Savings Goals →
                 </Button>
               </div>
             </div>
@@ -342,31 +342,31 @@ export default function OnboardingFlow({ onComplete }) {
 
         {step === 4 && (
           <>
-            {/* Step 4: Monthly Spending */}
+            {/* Step 4: Savings Goals */}
             <div className="text-center mb-8">
               <h1 className="text-3xl sm:text-4xl font-black mb-3">
-                How Much Do You Spend Monthly?
+                What Are You Saving For?
               </h1>
               <p className="text-gray-400 text-sm sm:text-base">
-                Food, gas, entertainment, shopping - your typical monthly spending.
+                Emergency fund? Vacation? New car? Let's set your first savings goal.
               </p>
             </div>
 
             <div className="bg-[#1a1a2e] border border-white/10 rounded-2xl p-4 sm:p-6">
               <div className="mb-6">
-                <label className="text-sm text-gray-400 mb-2 block">Estimated Monthly Spending</label>
+                <label className="text-sm text-gray-400 mb-2 block">Target Savings Amount</label>
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg">$</span>
                   <Input
                     type="number"
-                    value={monthlySpending}
-                    onChange={(e) => setMonthlySpending(e.target.value)}
-                    placeholder="e.g., 1500"
+                    value={savingsGoalAmount}
+                    onChange={(e) => setSavingsGoalAmount(e.target.value)}
+                    placeholder="e.g., 5000"
                     className="pl-10 bg-[#252538] border-white/10 text-white text-lg h-14"
                   />
                 </div>
                 <p className="text-xs text-gray-400 mt-2">
-                  This includes groceries, gas, dining out, entertainment, clothes, etc.
+                  Enter 0 if you don't have a savings goal yet. You can add specific goals later on the Savings page.
                 </p>
               </div>
 
@@ -380,10 +380,10 @@ export default function OnboardingFlow({ onComplete }) {
                 </Button>
                 <Button
                   onClick={handleComplete}
-                  disabled={loading || !monthlySpending || parseFloat(monthlySpending) <= 0}
+                  disabled={loading || savingsGoalAmount === ''}
                   className="flex-1 bg-lime-600 hover:bg-lime-500 text-black font-bold h-12 text-base"
                 >
-                  {loading ? 'Setting up...' : 'Next: Savings Goals →'}
+                  {loading ? 'Setting up...' : 'Finish Setup →'}
                 </Button>
               </div>
             </div>
