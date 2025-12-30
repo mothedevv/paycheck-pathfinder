@@ -201,7 +201,7 @@ export default function Debt() {
                       <span className="text-xl font-bold text-white">${equity.toLocaleString()}</span>
                     </div>
 
-                    {linkedDebt && paidOffPercent > 0 && (
+                    {linkedDebt && linkedDebt.original_balance && (
                       <div className="flex items-center justify-between pt-2 border-t border-white/5">
                         <span className="text-xs text-gray-500">Paid off</span>
                         <span className="text-sm font-semibold text-lime-400">
@@ -281,7 +281,7 @@ export default function Debt() {
                         <span className="text-gray-500">Due Day</span>
                         <span className="text-gray-300">{debt.due_day}</span>
                       </div>
-                      {paidOffPercent > 0 && (
+                      {debt.original_balance && (
                         <div className="flex items-center justify-between pt-2 border-t border-white/5">
                           <span className="text-xs text-gray-500">Paid off</span>
                           <span className="text-sm font-semibold text-lime-400">
