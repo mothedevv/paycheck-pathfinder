@@ -276,8 +276,7 @@ export default function Payday() {
           </div>
           <Button 
             onClick={() => setShowHistory(true)}
-            variant="outline" 
-            className="border-white/20 text-white hover:bg-white/10 h-9 sm:h-10 text-sm sm:text-base px-3 sm:px-4"
+            className="bg-[#1a1a2e] border border-white/20 text-white hover:bg-[#252538] h-9 sm:h-10 text-sm sm:text-base px-3 sm:px-4 font-semibold"
           >
             History
           </Button>
