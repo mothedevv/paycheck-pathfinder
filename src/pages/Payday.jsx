@@ -28,6 +28,7 @@ export default function Payday() {
   const [showHistory, setShowHistory] = useState(false);
   const [showEditPayday, setShowEditPayday] = useState(false);
   const [editPaydayDate, setEditPaydayDate] = useState('');
+  const [editPaydayAmount, setEditPaydayAmount] = useState('');
   
   const queryClient = useQueryClient();
 
@@ -302,6 +303,7 @@ export default function Payday() {
             <Button
               onClick={() => {
                 setEditPaydayDate(nextPayday || '');
+                setEditPaydayAmount(paycheckAmount.toString());
                 setShowEditPayday(true);
               }}
               variant="ghost"
@@ -661,13 +663,26 @@ export default function Payday() {
                 />
               </div>
 
+              <div>
+                <label className="text-sm text-gray-400 block mb-2">Paycheck Amount</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={editPaydayAmount}
+                  onChange={(e) => setEditPaydayAmount(e.target.value)}
+                  placeholder="2200"
+                  className="w-full bg-[#252538] border border-white/10 rounded-lg px-4 py-3 text-white"
+                />
+              </div>
+
               <Button
                 onClick={async () => {
-                  if (!primaryIncome || !editPaydayDate) return;
+                  if (!primaryIncome || !editPaydayDate || !editPaydayAmount) return;
                   
                   try {
                     await base44.entities.Income.update(primaryIncome.id, {
-                      next_payday: editPaydayDate
+                      next_payday: editPaydayDate,
+                      paycheck_amount: parseFloat(editPaydayAmount)
                     });
                     
                     queryClient.invalidateQueries({ queryKey: ['incomes'] });
@@ -677,7 +692,7 @@ export default function Payday() {
                     alert('Error updating payday. Please try again.');
                   }
                 }}
-                disabled={!editPaydayDate}
+                disabled={!editPaydayDate || !editPaydayAmount}
                 className="w-full bg-lime-500 text-black font-bold hover:bg-lime-400 disabled:opacity-50"
               >
                 Save
