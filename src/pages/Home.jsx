@@ -127,22 +127,68 @@ export default function Home() {
           </Link>
         </div>
 
-        {/* Track Income Sources Card */}
+        {/* Income Sources Section */}
         <div className="bg-[#1a1a2e] border border-white/10 rounded-xl sm:rounded-2xl p-4 sm:p-6 mt-4">
-          <h2 className="text-lg sm:text-xl font-bold mb-2">Track Your Income Sources</h2>
-          <p className="text-gray-400 text-xs sm:text-sm mb-4">
-            For households with multiple incomes, add each person's paycheck info here.
-          </p>
-          <Button
-            onClick={() => {
-              setEditingIncome(null);
-              setShowIncomeForm(true);
-            }}
-            className="w-full bg-lime-500 text-black font-bold hover:bg-lime-400 h-11 sm:h-12 text-sm sm:text-base"
-          >
-            <Plus size={18} className="mr-2" />
-            Add Income
-          </Button>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg sm:text-xl font-bold">Your Income Sources</h2>
+            <Button
+              onClick={() => {
+                setEditingIncome(null);
+                setShowIncomeForm(true);
+              }}
+              className="bg-lime-500 text-black font-bold hover:bg-lime-400 h-9 text-sm px-3"
+            >
+              <Plus size={16} className="mr-1" />
+              Add
+            </Button>
+          </div>
+
+          {incomes.length === 0 ? (
+            <div className="text-center py-4">
+              <p className="text-gray-400 text-xs sm:text-sm mb-3">
+                For households with multiple incomes, add each person's paycheck info here.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {incomes.map(income => (
+                <div
+                  key={income.id}
+                  onClick={() => {
+                    setEditingIncome(income);
+                    setShowIncomeForm(true);
+                  }}
+                  className="bg-white/5 hover:bg-white/10 rounded-lg p-3 cursor-pointer transition-colors"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-semibold text-white text-sm flex items-center gap-2">
+                        {income.name}
+                        {income.is_primary && (
+                          <span className="text-xs bg-lime-500/20 text-lime-400 px-2 py-0.5 rounded">Primary</span>
+                        )}
+                      </h3>
+                      <p className="text-xs text-gray-400 mt-1">
+                        {income.pay_frequency.replace('_', '-')} • ${income.paycheck_amount.toLocaleString()}/check
+                      </p>
+                    </div>
+                    {income.next_payday && (
+                      <div className="text-right">
+                        <p className="text-xs text-gray-500">Next</p>
+                        <p className="text-sm font-semibold text-lime-400">
+                          {(() => {
+                            const [y, m, d] = income.next_payday.split('-').map(Number);
+                            const date = new Date(y, m - 1, d);
+                            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                          })()}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Stats Grid */}
