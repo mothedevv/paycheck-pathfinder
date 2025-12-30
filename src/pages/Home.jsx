@@ -1,28 +1,25 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { motion } from 'framer-motion';
-import { DollarSign, PiggyBank, CreditCard, TrendingUp, Calendar, Settings as SettingsIcon } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { Settings, Plus, ArrowRight, Receipt, CreditCard, PiggyBank, Calendar } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Button } from "@/components/ui/button";
-import QuirkySaying from '@/components/ui/QuirkySaying';
-import BucketCard from '@/components/budget/BucketCard';
-import NetWorthCard from '@/components/budget/NetWorthCard';
 import OnboardingFlow from '@/components/onboarding/OnboardingFlow';
 import IncomeForm from '@/components/forms/IncomeForm';
 
+const quirkySayings = [
+  "Rich people budget. Coincidence? I think not.",
+  "Stop being broke. It's embarrassing.",
+  "Your budget called. It misses you.",
+  "Money talks, but wealth whispers.",
+  "Budget like your future self is watching.",
+];
+
 export default function Home() {
   const queryClient = useQueryClient();
-  const [showOnboarding, setShowOnboarding] = useState(false);
   const [showIncomeForm, setShowIncomeForm] = useState(false);
   const [editingIncome, setEditingIncome] = useState(null);
-
-  const { data: user } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
-    refetchOnWindowFocus: false
-  });
 
   const { data: budgets = [], isLoading: budgetLoading } = useQuery({
     queryKey: ['userBudget'],
@@ -51,15 +48,6 @@ export default function Home() {
     refetchOnWindowFocus: false
   });
 
-  const { data: assets = [] } = useQuery({
-    queryKey: ['assets'],
-    queryFn: async () => {
-      const currentUser = await base44.auth.me();
-      return base44.entities.Asset.filter({ created_by: currentUser.email });
-    },
-    refetchOnWindowFocus: false
-  });
-
   const { data: savingsGoals = [] } = useQuery({
     queryKey: ['savingsGoals'],
     queryFn: async () => {
@@ -79,22 +67,23 @@ export default function Home() {
   });
 
   const budget = budgets[0];
+  const [saying] = useState(() => quirkySayings[Math.floor(Math.random() * quirkySayings.length)]);
 
-  // Calculate net worth
-  const totalAssets = assets.reduce((sum, a) => sum + (a.current_value || 0), 0);
+  // Calculate totals
+  const totalBills = bills.reduce((sum, b) => sum + (b.amount || 0), 0);
   const totalDebts = debts.reduce((sum, d) => sum + (d.balance || 0), 0);
-  const netWorth = totalAssets - totalDebts;
+  const totalSavingsGoals = savingsGoals.reduce((sum, g) => sum + (g.target_amount || 0), 0);
+  const currentSavings = savingsGoals.reduce((sum, g) => sum + (g.current_amount || 0), 0);
+  const savingsProgress = totalSavingsGoals > 0 ? Math.round((currentSavings / totalSavingsGoals) * 100) : 0;
 
-  // Calculate upcoming bills (next 7 days)
-  const today = new Date();
-  const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
-  const upcomingBills = bills.filter(bill => {
-    if (!bill.due_date) return false;
-    const dueDate = new Date(bill.due_date);
-    return dueDate >= today && dueDate <= nextWeek;
-  });
+  // Calculate debt payoff percentage
+  const totalOriginalDebt = debts.reduce((sum, d) => sum + (d.original_balance || d.balance || 0), 0);
+  const debtProgress = totalOriginalDebt > 0 ? Math.round(((totalOriginalDebt - totalDebts) / totalOriginalDebt) * 100) : 0;
 
-  const totalUpcoming = upcomingBills.reduce((sum, b) => sum + (b.amount || 0), 0);
+  // Get next payday
+  const primaryIncome = incomes.find(i => i.is_primary) || incomes[0];
+  const nextPayday = primaryIncome?.next_payday;
+  const expectedAmount = primaryIncome?.paycheck_amount || 0;
 
   if (budgetLoading) {
     return (
@@ -113,179 +102,166 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0d0d1a] text-white">
-      <div className="max-w-6xl mx-auto px-4 py-8">
+    <div className="min-h-screen bg-[#0d0d1a] text-white pb-24">
+      <div className="max-w-lg mx-auto px-4 py-6">
         {/* Header */}
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex items-start justify-between mb-2">
           <div>
-            <h1 className="text-3xl md:text-4xl font-black">Budget Dashboard</h1>
+            <h1 className="text-3xl font-black">Your Money Dashboard</h1>
+            <p className="text-lime-400 italic text-sm mt-1">"{saying}"</p>
           </div>
           <Link to={createPageUrl('Settings')}>
-            <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white hover:bg-white/10">
-              <SettingsIcon size={20} />
+            <Button 
+              variant="outline" 
+              className="border-white/20 text-white hover:bg-white/10 flex items-center gap-2"
+            >
+              <Settings size={16} />
+              Edit Buckets
             </Button>
           </Link>
         </div>
-        <QuirkySaying className="text-sm mb-8" />
 
-        {/* Income Sources */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold">Income Sources</h2>
-            <Button 
-              onClick={() => {
-                setEditingIncome(null);
-                setShowIncomeForm(true);
-              }}
-              size="sm"
-              className="bg-lime-500 text-black font-bold hover:bg-lime-400"
-            >
-              + Add Income
-            </Button>
-          </div>
-          
-          {incomes.length === 0 ? (
-            <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-              <p className="text-gray-400 text-sm">No income sources yet. Add one to get started!</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {incomes.map(income => (
-                <div 
-                  key={income.id}
-                  className="bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 transition-all cursor-pointer"
-                  onClick={() => {
-                    setEditingIncome(income);
-                    setShowIncomeForm(true);
-                  }}
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-semibold text-white">{income.name}</p>
-                      <p className="text-sm text-gray-400 capitalize">{income.pay_frequency.replace('_', ' ')}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xl font-bold text-lime-400">${income.paycheck_amount.toLocaleString()}</p>
-                      {income.next_payday && (
-                        <p className="text-xs text-gray-400">Next: {new Date(income.next_payday).toLocaleDateString()}</p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+        {/* Track Income Sources Card */}
+        <div className="bg-[#1a1a2e] border border-white/10 rounded-2xl p-6 mt-6">
+          <h2 className="text-xl font-bold mb-2">Track Your Income Sources</h2>
+          <p className="text-gray-400 text-sm mb-4">
+            For households with multiple incomes, add each person's paycheck info here.
+          </p>
+          <Button
+            onClick={() => {
+              setEditingIncome(null);
+              setShowIncomeForm(true);
+            }}
+            className="w-full bg-lime-500 text-black font-bold hover:bg-lime-400 h-12 text-base"
+          >
+            <Plus size={20} className="mr-2" />
+            Add Income
+          </Button>
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-gradient-to-br from-purple-500/20 to-purple-600/10 border border-purple-500/30 rounded-xl p-4"
-          >
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-purple-500/20">
-                <DollarSign className="text-purple-400" size={20} />
+        <div className="grid grid-cols-2 gap-4 mt-6">
+          {/* Monthly Bills */}
+          <Link to={createPageUrl('Bills')}>
+            <div className="bg-[#1a1a2e] border border-white/10 rounded-2xl p-5 hover:bg-[#252538] transition-colors cursor-pointer">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-2 rounded-lg bg-pink-500/20">
+                  <Receipt className="text-pink-400" size={20} />
+                </div>
+                <span className="text-sm text-gray-400">Monthly Bills</span>
               </div>
-              <div>
-                <p className="text-xs text-gray-400">Monthly Income</p>
-                <p className="text-xl font-black text-white">${budget.monthly_income?.toLocaleString() || 0}</p>
-              </div>
+              <p className="text-2xl font-black mb-1">${totalBills.toLocaleString()}</p>
+              <p className="text-xs text-gray-500">{bills.length} bills tracked</p>
             </div>
-          </motion.div>
+          </Link>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="bg-gradient-to-br from-blue-500/20 to-blue-600/10 border border-blue-500/30 rounded-xl p-4"
-          >
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-blue-500/20">
-                <CreditCard className="text-blue-400" size={20} />
+          {/* Consumer Debt */}
+          <Link to={createPageUrl('Debt')}>
+            <div className="bg-[#1a1a2e] border border-white/10 rounded-2xl p-5 hover:bg-[#252538] transition-colors cursor-pointer">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-2 rounded-lg bg-purple-500/20">
+                  <CreditCard className="text-purple-400" size={20} />
+                </div>
+                <span className="text-sm text-gray-400">Consumer Debt</span>
               </div>
-              <div>
-                <p className="text-xs text-gray-400">Total Bills</p>
-                <p className="text-xl font-black text-white">{bills.length}</p>
-              </div>
+              <p className="text-2xl font-black mb-1">${totalDebts.toLocaleString()}</p>
+              <p className="text-xs text-gray-500">{debtProgress}% paid off</p>
             </div>
-          </motion.div>
+          </Link>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="bg-gradient-to-br from-orange-500/20 to-orange-600/10 border border-orange-500/30 rounded-xl p-4"
-          >
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-orange-500/20">
-                <Calendar className="text-orange-400" size={20} />
+          {/* Savings Goals */}
+          <Link to={createPageUrl('Savings')}>
+            <div className="bg-[#1a1a2e] border border-white/10 rounded-2xl p-5 hover:bg-[#252538] transition-colors cursor-pointer">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-2 rounded-lg bg-lime-500/20">
+                  <PiggyBank className="text-lime-400" size={20} />
+                </div>
+                <span className="text-sm text-gray-400">Savings Goals</span>
               </div>
-              <div>
-                <p className="text-xs text-gray-400">Due This Week</p>
-                <p className="text-xl font-black text-white">${totalUpcoming.toLocaleString()}</p>
-              </div>
+              <p className="text-2xl font-black mb-1">${currentSavings.toLocaleString()}</p>
+              <p className="text-xs text-gray-500">{savingsProgress}% to goals</p>
             </div>
-          </motion.div>
+          </Link>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="bg-gradient-to-br from-green-500/20 to-green-600/10 border border-green-500/30 rounded-xl p-4"
-          >
-            <div className="flex items-center gap-3">
+          {/* Next Payday */}
+          <div className="bg-[#1a1a2e] border border-white/10 rounded-2xl p-5">
+            <div className="flex items-center gap-3 mb-3">
               <div className="p-2 rounded-lg bg-green-500/20">
-                <TrendingUp className="text-green-400" size={20} />
+                <Calendar className="text-green-400" size={20} />
               </div>
-              <div>
-                <p className="text-xs text-gray-400">Net Worth</p>
-                <p className="text-xl font-black text-white">${netWorth.toLocaleString()}</p>
-              </div>
+              <span className="text-sm text-gray-400">Next Payday</span>
             </div>
-          </motion.div>
-        </div>
-
-        {/* Budget Buckets */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-4">Your Budget Buckets</h2>
-          <div className="space-y-4">
-            <BucketCard
-              name="Bills"
-              percentage={budget.bills_percentage || 0}
-              amount={(budget.monthly_income || 0) * ((budget.bills_percentage || 0) / 100)}
-              color="blue"
-              icon={CreditCard}
-              link="Bills"
-            />
-            <BucketCard
-              name="Spending Money"
-              percentage={budget.spending_percentage || 0}
-              amount={(budget.monthly_income || 0) * ((budget.spending_percentage || 0) / 100)}
-              color="purple"
-              icon={DollarSign}
-              link="Spending"
-            />
-            <BucketCard
-              name="Savings & Debt"
-              percentage={budget.savings_percentage || 0}
-              amount={(budget.monthly_income || 0) * ((budget.savings_percentage || 0) / 100)}
-              color="lime"
-              icon={PiggyBank}
-              link={debts.length > 0 ? "Debt" : "Savings"}
-            />
+            <p className="text-2xl font-black mb-1">
+              {nextPayday ? new Date(nextPayday).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Not set'}
+            </p>
+            <p className="text-xs text-gray-500">${expectedAmount.toLocaleString()} expected</p>
           </div>
         </div>
 
-        {/* Net Worth */}
-        <NetWorthCard 
-          totalAssets={totalAssets}
-          totalDebts={totalDebts}
-          netWorth={netWorth}
-          assets={assets}
-          debts={debts}
-        />
+        {/* Action Buttons */}
+        <div className="grid grid-cols-2 gap-4 mt-6">
+          <Link to={createPageUrl('Bills')}>
+            <Button variant="outline" className="w-full h-14 border-white/20 text-white hover:bg-white/10">
+              <Plus size={18} className="mr-2" />
+              Add Bill
+            </Button>
+          </Link>
+          <Link to={createPageUrl('Debt')}>
+            <Button variant="outline" className="w-full h-14 border-white/20 text-white hover:bg-white/10">
+              <Plus size={18} className="mr-2" />
+              Add Debt
+            </Button>
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4 mt-4">
+          <Link to={createPageUrl('Savings')}>
+            <Button variant="outline" className="w-full h-14 border-white/20 text-white hover:bg-white/10">
+              <Plus size={18} className="mr-2" />
+              Add Goal
+            </Button>
+          </Link>
+          <Button className="w-full h-14 bg-lime-500 text-black font-bold hover:bg-lime-400">
+            Plan Payday
+            <ArrowRight size={18} className="ml-2" />
+          </Button>
+        </div>
+      </div>
+
+      {/* Bottom Navigation */}
+      <div className="fixed bottom-0 left-0 right-0 bg-[#1a1a2e] border-t border-white/10">
+        <div className="max-w-lg mx-auto px-4 py-3">
+          <div className="flex items-center justify-around">
+            <Link to={createPageUrl('Home')} className="flex flex-col items-center gap-1">
+              <div className="text-lime-400">
+                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+                </svg>
+              </div>
+              <span className="text-xs text-lime-400 font-semibold">Dashboard</span>
+            </Link>
+
+            <Link to={createPageUrl('Bills')} className="flex flex-col items-center gap-1">
+              <Receipt className="w-6 h-6 text-gray-400" />
+              <span className="text-xs text-gray-400">Bills</span>
+            </Link>
+
+            <Link to={createPageUrl('Debt')} className="flex flex-col items-center gap-1">
+              <CreditCard className="w-6 h-6 text-gray-400" />
+              <span className="text-xs text-gray-400">Debt</span>
+            </Link>
+
+            <Link to={createPageUrl('Savings')} className="flex flex-col items-center gap-1">
+              <PiggyBank className="w-6 h-6 text-gray-400" />
+              <span className="text-xs text-gray-400">Savings</span>
+            </Link>
+
+            <div className="flex flex-col items-center gap-1">
+              <Calendar className="w-6 h-6 text-gray-400" />
+              <span className="text-xs text-gray-400">Payday</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Income Form Modal */}
