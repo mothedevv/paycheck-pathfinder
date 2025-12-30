@@ -6,6 +6,7 @@ import { ArrowLeft, Plus, TrendingDown, Receipt, Calendar } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import DebtForm from '@/components/forms/DebtForm';
+import AssetForm from '@/components/forms/AssetForm';
 
 const quirkySayings = [
   "Your credit card is not free money. Shocking, I know.",
@@ -18,6 +19,8 @@ export default function Debt() {
   const [saying] = useState(() => quirkySayings[Math.floor(Math.random() * quirkySayings.length)]);
   const [showDebtForm, setShowDebtForm] = useState(false);
   const [editingDebt, setEditingDebt] = useState(null);
+  const [showAssetForm, setShowAssetForm] = useState(false);
+  const [editingAsset, setEditingAsset] = useState(null);
   
   const queryClient = useQueryClient();
 
@@ -55,7 +58,14 @@ export default function Debt() {
             </h1>
           </div>
           <div className="flex gap-1.5 sm:gap-2">
-            <Button variant="outline" className="border-white/20 text-white hover:bg-white/10 h-9 sm:h-10 text-xs sm:text-sm px-2 sm:px-4">
+            <Button 
+              onClick={() => {
+                setEditingAsset(null);
+                setShowAssetForm(true);
+              }}
+              variant="outline" 
+              className="border-white/20 text-white hover:bg-white/10 h-9 sm:h-10 text-xs sm:text-sm px-2 sm:px-4"
+            >
               <Plus size={14} className="mr-1" />
               Asset
             </Button>
@@ -136,6 +146,10 @@ export default function Debt() {
               {assets.map(asset => (
                 <div
                   key={asset.id}
+                  onClick={() => {
+                    setEditingAsset(asset);
+                    setShowAssetForm(true);
+                  }}
                   className="bg-[#1a1a2e] border border-white/10 rounded-xl p-4 hover:bg-[#252538] transition-colors cursor-pointer"
                 >
                   <div className="flex items-center justify-between">
@@ -197,7 +211,7 @@ export default function Debt() {
         </div>
       </div>
 
-      {/* Debt Form Modal */}
+      {/* Forms */}
       {showDebtForm && (
         <DebtForm
           debt={editingDebt}
@@ -209,6 +223,21 @@ export default function Debt() {
             queryClient.invalidateQueries({ queryKey: ['debts'] });
             setShowDebtForm(false);
             setEditingDebt(null);
+          }}
+        />
+      )}
+
+      {showAssetForm && (
+        <AssetForm
+          asset={editingAsset}
+          onClose={() => {
+            setShowAssetForm(false);
+            setEditingAsset(null);
+          }}
+          onSuccess={() => {
+            queryClient.invalidateQueries({ queryKey: ['assets'] });
+            setShowAssetForm(false);
+            setEditingAsset(null);
           }}
         />
       )}

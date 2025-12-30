@@ -19,6 +19,18 @@ export default function Settings() {
   });
 
   const budget = budgets[0];
+  
+  React.useEffect(() => {
+    if (budget) {
+      setFormData({
+        monthly_income: budget.monthly_income || 0,
+        bills_percentage: budget.bills_percentage || 50,
+        spending_percentage: budget.spending_percentage || 30,
+        savings_percentage: budget.savings_percentage || 20
+      });
+    }
+  }, [budget]);
+
   const [formData, setFormData] = useState({
     monthly_income: budget?.monthly_income || 0,
     bills_percentage: budget?.bills_percentage || 50,
