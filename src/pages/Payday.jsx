@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Calendar, Receipt, Sparkles, Plus, CheckCircle, CreditCard, PiggyBank } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import BillForm from '@/components/forms/BillForm';
+import DebtForm from '@/components/forms/DebtForm';
+import SavingsGoalForm from '@/components/forms/SavingsGoalForm';
+import OneTimeDepositForm from '@/components/forms/OneTimeDepositForm';
 
 const quirkySayings = [
   "Stop treating your savings like an emergency fund for brunch.",
@@ -15,6 +19,13 @@ const quirkySayings = [
 
 export default function Payday() {
   const [saying] = useState(() => quirkySayings[Math.floor(Math.random() * quirkySayings.length)]);
+  const [showBillForm, setShowBillForm] = useState(false);
+  const [showDebtForm, setShowDebtForm] = useState(false);
+  const [showGoalForm, setShowGoalForm] = useState(false);
+  const [showDepositForm, setShowDepositForm] = useState(false);
+  const [isCompleting, setIsCompleting] = useState(false);
+  
+  const queryClient = useQueryClient();
 
   const { data: budgets = [] } = useQuery({
     queryKey: ['userBudget'],
@@ -78,6 +89,75 @@ export default function Payday() {
   const totalUnallocated = totalBills - totalAllocated;
 
   const hasHYSA = budget?.has_hysa || false;
+
+  // Handle marking payday complete
+  const handleMarkComplete = async () => {
+    if (!primaryIncome || !paydayDate) return;
+    if (!confirm('Mark this payday as complete? This will record allocations and update your next payday date.')) return;
+
+    setIsCompleting(true);
+    try {
+      // Create payday history record
+      const billsAllocatedData = billsDueNow.map(bill => ({
+        bill_name: bill.name,
+        amount_due: bill.amount,
+        amount_allocated: bill.amount,
+        due_date: bill.due_date,
+        was_autopay: bill.is_autopay
+      }));
+
+      await base44.entities.PaydayHistory.create({
+        payday_date: paydayDate.toISOString().split('T')[0],
+        paycheck_amount: paycheckAmount,
+        bills_amount: billsAmount,
+        spending_amount: spendingAmount,
+        savings_amount: savingsAmount,
+        bills_allocated: billsAllocatedData,
+        debts_allocated: [],
+        savings_goals_allocated: [],
+        bills_unallocated: 0,
+        savings_unallocated: 0
+      });
+
+      // Update each bill's allocated amount
+      for (const bill of billsDueNow) {
+        await base44.entities.Bill.update(bill.id, {
+          allocated_amount: (bill.allocated_amount || 0) + bill.amount,
+          last_allocated_date: paydayDate.toISOString().split('T')[0]
+        });
+      }
+
+      // Calculate next payday based on frequency
+      const nextPaydayDate = new Date(paydayDate);
+      const frequency = primaryIncome.pay_frequency;
+      
+      if (frequency === 'weekly') {
+        nextPaydayDate.setDate(nextPaydayDate.getDate() + 7);
+      } else if (frequency === 'biweekly') {
+        nextPaydayDate.setDate(nextPaydayDate.getDate() + 14);
+      } else if (frequency === 'semimonthly') {
+        nextPaydayDate.setDate(nextPaydayDate.getDate() + 15);
+      } else if (frequency === 'monthly') {
+        nextPaydayDate.setMonth(nextPaydayDate.getMonth() + 1);
+      }
+
+      // Update income with next payday
+      await base44.entities.Income.update(primaryIncome.id, {
+        next_payday: nextPaydayDate.toISOString().split('T')[0]
+      });
+
+      // Refresh data
+      queryClient.invalidateQueries({ queryKey: ['bills'] });
+      queryClient.invalidateQueries({ queryKey: ['incomes'] });
+      
+      alert('Payday marked complete! Next payday updated.');
+    } catch (error) {
+      console.error('Error marking payday complete:', error);
+      alert('Error completing payday. Please try again.');
+    } finally {
+      setIsCompleting(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#0d0d1a] text-white pb-24">
@@ -182,10 +262,29 @@ export default function Payday() {
             <span className="text-pink-400">$</span>
             Pay These Bills Now
           </h3>
-          <div className="bg-[#1a1a2e] border border-white/10 rounded-xl p-8 flex flex-col items-center justify-center">
-            <CheckCircle className="text-lime-500 mb-3" size={48} />
-            <p className="text-gray-400 text-center">No bills due this check!</p>
-          </div>
+          {billsDueNow.length === 0 ? (
+            <div className="bg-[#1a1a2e] border border-white/10 rounded-xl p-8 flex flex-col items-center justify-center">
+              <CheckCircle className="text-lime-500 mb-3" size={48} />
+              <p className="text-gray-400 text-center">No bills due this check!</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {billsDueNow.map(bill => (
+                <div key={bill.id} className="bg-[#1a1a2e] border border-white/10 rounded-xl p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-semibold text-white">{bill.name}</h4>
+                      <p className="text-sm text-gray-400">
+                        Due: {new Date(bill.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        {bill.is_autopay && <span className="ml-2 text-lime-400">• Auto-pay</span>}
+                      </p>
+                    </div>
+                    <p className="text-xl font-bold text-pink-400">${bill.amount.toLocaleString()}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Total Unallocated */}
@@ -206,7 +305,10 @@ export default function Payday() {
               <Sparkles className="text-amber-400" size={20} />
               One-Time Deposits
             </h3>
-            <Button className="bg-amber-500 text-black font-bold hover:bg-amber-400 h-9">
+            <Button 
+              onClick={() => setShowDepositForm(true)}
+              className="bg-amber-500 text-black font-bold hover:bg-amber-400 h-9"
+            >
               <Plus size={16} className="mr-1" />
               Add Deposit
             </Button>
@@ -240,9 +342,13 @@ export default function Payday() {
 
         {/* Mark Complete Button */}
         <div className="mt-6 sm:mt-8">
-          <Button className="w-full bg-lime-500 text-black font-bold hover:bg-lime-400 h-12 sm:h-14 text-base sm:text-lg">
+          <Button 
+            onClick={handleMarkComplete}
+            disabled={isCompleting || !nextPayday}
+            className="w-full bg-lime-500 text-black font-bold hover:bg-lime-400 h-12 sm:h-14 text-base sm:text-lg disabled:opacity-50"
+          >
             <CheckCircle size={18} className="mr-2" />
-            Mark Payday Complete
+            {isCompleting ? 'Processing...' : 'Mark Payday Complete'}
           </Button>
         </div>
       </div>
@@ -285,6 +391,47 @@ export default function Payday() {
           </div>
         </div>
       </div>
+
+      {/* Forms */}
+      {showBillForm && (
+        <BillForm
+          onClose={() => setShowBillForm(false)}
+          onSuccess={() => {
+            queryClient.invalidateQueries({ queryKey: ['bills'] });
+            setShowBillForm(false);
+          }}
+        />
+      )}
+
+      {showDebtForm && (
+        <DebtForm
+          onClose={() => setShowDebtForm(false)}
+          onSuccess={() => {
+            queryClient.invalidateQueries({ queryKey: ['debts'] });
+            setShowDebtForm(false);
+          }}
+        />
+      )}
+
+      {showGoalForm && (
+        <SavingsGoalForm
+          onClose={() => setShowGoalForm(false)}
+          onSuccess={() => {
+            queryClient.invalidateQueries({ queryKey: ['savingsGoals'] });
+            setShowGoalForm(false);
+          }}
+        />
+      )}
+
+      {showDepositForm && (
+        <OneTimeDepositForm
+          onClose={() => setShowDepositForm(false)}
+          onSuccess={() => {
+            queryClient.invalidateQueries({ queryKey: ['oneTimeDeposits'] });
+            setShowDepositForm(false);
+          }}
+        />
+      )}
     </div>
   );
 }

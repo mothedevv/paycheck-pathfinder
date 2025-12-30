@@ -7,6 +7,9 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import OnboardingFlow from '@/components/onboarding/OnboardingFlow';
 import IncomeForm from '@/components/forms/IncomeForm';
+import BillForm from '@/components/forms/BillForm';
+import DebtForm from '@/components/forms/DebtForm';
+import SavingsGoalForm from '@/components/forms/SavingsGoalForm';
 
 const quirkySayings = [
   "Rich people budget. Coincidence? I think not.",
@@ -20,6 +23,9 @@ export default function Home() {
   const queryClient = useQueryClient();
   const [showIncomeForm, setShowIncomeForm] = useState(false);
   const [editingIncome, setEditingIncome] = useState(null);
+  const [showBillForm, setShowBillForm] = useState(false);
+  const [showDebtForm, setShowDebtForm] = useState(false);
+  const [showGoalForm, setShowGoalForm] = useState(false);
 
   const { data: budgets = [], isLoading: budgetLoading } = useQuery({
     queryKey: ['userBudget'],
@@ -201,27 +207,33 @@ export default function Home() {
 
         {/* Action Buttons */}
         <div className="grid grid-cols-2 gap-3 sm:gap-4 mt-4 sm:mt-6">
-          <Link to={createPageUrl('Bills')}>
-            <Button variant="outline" className="w-full h-12 sm:h-14 border-white/20 text-white hover:bg-white/10 text-sm sm:text-base">
-              <Plus size={16} className="mr-1 sm:mr-2" />
-              Add Bill
-            </Button>
-          </Link>
-          <Link to={createPageUrl('Debt')}>
-            <Button variant="outline" className="w-full h-12 sm:h-14 border-white/20 text-white hover:bg-white/10 text-sm sm:text-base">
-              <Plus size={16} className="mr-1 sm:mr-2" />
-              Add Debt
-            </Button>
-          </Link>
+          <Button 
+            onClick={() => setShowBillForm(true)}
+            variant="outline" 
+            className="w-full h-12 sm:h-14 border-white/20 text-white hover:bg-white/10 text-sm sm:text-base"
+          >
+            <Plus size={16} className="mr-1 sm:mr-2" />
+            Add Bill
+          </Button>
+          <Button 
+            onClick={() => setShowDebtForm(true)}
+            variant="outline" 
+            className="w-full h-12 sm:h-14 border-white/20 text-white hover:bg-white/10 text-sm sm:text-base"
+          >
+            <Plus size={16} className="mr-1 sm:mr-2" />
+            Add Debt
+          </Button>
         </div>
 
         <div className="grid grid-cols-2 gap-3 sm:gap-4 mt-3 sm:mt-4">
-          <Link to={createPageUrl('Savings')}>
-            <Button variant="outline" className="w-full h-12 sm:h-14 border-white/20 text-white hover:bg-white/10 text-sm sm:text-base">
-              <Plus size={16} className="mr-1 sm:mr-2" />
-              Add Goal
-            </Button>
-          </Link>
+          <Button 
+            onClick={() => setShowGoalForm(true)}
+            variant="outline" 
+            className="w-full h-12 sm:h-14 border-white/20 text-white hover:bg-white/10 text-sm sm:text-base"
+          >
+            <Plus size={16} className="mr-1 sm:mr-2" />
+            Add Goal
+          </Button>
           <Link to={createPageUrl('Payday')}>
             <Button className="w-full h-12 sm:h-14 bg-lime-500 text-black font-bold hover:bg-lime-400 text-sm sm:text-base">
               Plan Payday
@@ -267,7 +279,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Income Form Modal */}
+      {/* Forms */}
       {showIncomeForm && (
         <IncomeForm
           income={editingIncome}
@@ -282,6 +294,36 @@ export default function Home() {
           }}
         />
       )}
-    </div>
-  );
+
+      {showBillForm && (
+        <BillForm
+          onClose={() => setShowBillForm(false)}
+          onSuccess={() => {
+            queryClient.invalidateQueries({ queryKey: ['bills'] });
+            setShowBillForm(false);
+          }}
+        />
+      )}
+
+      {showDebtForm && (
+        <DebtForm
+          onClose={() => setShowDebtForm(false)}
+          onSuccess={() => {
+            queryClient.invalidateQueries({ queryKey: ['debts'] });
+            setShowDebtForm(false);
+          }}
+        />
+      )}
+
+      {showGoalForm && (
+        <SavingsGoalForm
+          onClose={() => setShowGoalForm(false)}
+          onSuccess={() => {
+            queryClient.invalidateQueries({ queryKey: ['savingsGoals'] });
+            setShowGoalForm(false);
+          }}
+        />
+      )}
+      </div>
+      );
 }
