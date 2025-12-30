@@ -404,17 +404,6 @@ export default function Payday() {
           </div>
         </div>
 
-        {/* Total Unallocated for All Future Bills */}
-        <div className="mt-4 bg-gradient-to-br from-lime-900/20 to-lime-950/10 border border-lime-500/30 rounded-xl p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-300 mb-1">Total Saved for All Future Bills</p>
-              <p className="text-xs text-gray-500">All bills minus what's been allocated</p>
-            </div>
-            <p className="text-3xl font-black text-lime-400">${totalUnallocated.toFixed(2)}</p>
-          </div>
-        </div>
-
         {/* One-Time Deposits */}
         <div className="mt-8">
           <div className="flex items-center justify-between mb-4">
