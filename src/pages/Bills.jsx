@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Plus, Receipt, Search, Filter } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import BillForm from '@/components/forms/BillForm';
 
 const quirkySayings = [
   "Broke is a mindset. Let's change yours.",
@@ -19,6 +20,10 @@ export default function Bills() {
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [saying] = useState(() => quirkySayings[Math.floor(Math.random() * quirkySayings.length)]);
+  const [showBillForm, setShowBillForm] = useState(false);
+  const [editingBill, setEditingBill] = useState(null);
+  
+  const queryClient = useQueryClient();
 
   const { data: budgets = [] } = useQuery({
     queryKey: ['userBudget'],
@@ -61,7 +66,13 @@ export default function Bills() {
             </Link>
             <h1 className="text-2xl sm:text-3xl font-black">Your Bills</h1>
           </div>
-          <Button className="bg-lime-500 text-black font-bold hover:bg-lime-400 h-9 sm:h-10 text-sm sm:text-base px-3 sm:px-4">
+          <Button 
+            onClick={() => {
+              setEditingBill(null);
+              setShowBillForm(true);
+            }}
+            className="bg-lime-500 text-black font-bold hover:bg-lime-400 h-9 sm:h-10 text-sm sm:text-base px-3 sm:px-4"
+          >
             <Plus size={16} className="mr-1 sm:mr-2" />
             <span className="hidden sm:inline">Add Bill</span>
             <span className="sm:hidden">Add</span>
@@ -143,6 +154,10 @@ export default function Bills() {
             {filteredBills.map(bill => (
               <div
                 key={bill.id}
+                onClick={() => {
+                  setEditingBill(bill);
+                  setShowBillForm(true);
+                }}
                 className="bg-[#1a1a2e] border border-white/10 rounded-xl p-3 sm:p-4 hover:bg-[#252538] transition-colors cursor-pointer"
               >
                 <div className="flex items-center justify-between">
@@ -210,6 +225,22 @@ export default function Bills() {
           </div>
         </div>
       </div>
+
+      {/* Bill Form Modal */}
+      {showBillForm && (
+        <BillForm
+          bill={editingBill}
+          onClose={() => {
+            setShowBillForm(false);
+            setEditingBill(null);
+          }}
+          onSuccess={() => {
+            queryClient.invalidateQueries({ queryKey: ['bills'] });
+            setShowBillForm(false);
+            setEditingBill(null);
+          }}
+        />
+      )}
     </div>
   );
 }

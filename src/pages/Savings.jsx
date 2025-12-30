@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Plus, Target, Receipt, Calendar } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import SavingsGoalForm from '@/components/forms/SavingsGoalForm';
 
 const quirkySayings = [
   "Debt is heavy. Let's get that weight off.",
@@ -15,6 +16,10 @@ const quirkySayings = [
 
 export default function Savings() {
   const [saying] = useState(() => quirkySayings[Math.floor(Math.random() * quirkySayings.length)]);
+  const [showGoalForm, setShowGoalForm] = useState(false);
+  const [editingGoal, setEditingGoal] = useState(null);
+  
+  const queryClient = useQueryClient();
 
   const { data: savingsGoals = [] } = useQuery({
     queryKey: ['savingsGoals'],
@@ -40,7 +45,13 @@ export default function Savings() {
               Savings<br />Goals
             </h1>
           </div>
-          <Button className="bg-lime-500 text-black font-bold hover:bg-lime-400 h-9 sm:h-10 text-sm sm:text-base px-3 sm:px-4">
+          <Button 
+            onClick={() => {
+              setEditingGoal(null);
+              setShowGoalForm(true);
+            }}
+            className="bg-lime-500 text-black font-bold hover:bg-lime-400 h-9 sm:h-10 text-sm sm:text-base px-3 sm:px-4"
+          >
             <Plus size={16} className="mr-1 sm:mr-2" />
             <span className="hidden sm:inline">Add Goal</span>
             <span className="sm:hidden">Add</span>
@@ -60,7 +71,10 @@ export default function Savings() {
             <p className="text-gray-400 text-center text-sm max-w-sm mb-8 leading-relaxed">
               What are you saving for? Emergency fund? Vacation? New car? Set a goal and watch your progress.
             </p>
-            <Button className="bg-lime-500 text-black font-bold hover:bg-lime-400 px-8 h-12">
+            <Button 
+              onClick={() => setShowGoalForm(true)}
+              className="bg-lime-500 text-black font-bold hover:bg-lime-400 px-8 h-12"
+            >
               <Plus size={20} className="mr-2" />
               Create Your First Goal
             </Button>
@@ -75,6 +89,10 @@ export default function Savings() {
               return (
                 <div
                   key={goal.id}
+                  onClick={() => {
+                    setEditingGoal(goal);
+                    setShowGoalForm(true);
+                  }}
                   className="bg-[#1a1a2e] border border-white/10 rounded-xl p-3 sm:p-4 hover:bg-[#252538] transition-colors cursor-pointer"
                 >
                   <div className="flex items-center justify-between mb-2 sm:mb-3">
@@ -145,6 +163,22 @@ export default function Savings() {
           </div>
         </div>
       </div>
+
+      {/* Savings Goal Form Modal */}
+      {showGoalForm && (
+        <SavingsGoalForm
+          goal={editingGoal}
+          onClose={() => {
+            setShowGoalForm(false);
+            setEditingGoal(null);
+          }}
+          onSuccess={() => {
+            queryClient.invalidateQueries({ queryKey: ['savingsGoals'] });
+            setShowGoalForm(false);
+            setEditingGoal(null);
+          }}
+        />
+      )}
     </div>
   );
 }

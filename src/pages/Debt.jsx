@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Plus, TrendingDown, Receipt, Calendar } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import DebtForm from '@/components/forms/DebtForm';
 
 const quirkySayings = [
   "Your credit card is not free money. Shocking, I know.",
@@ -15,6 +16,10 @@ const quirkySayings = [
 
 export default function Debt() {
   const [saying] = useState(() => quirkySayings[Math.floor(Math.random() * quirkySayings.length)]);
+  const [showDebtForm, setShowDebtForm] = useState(false);
+  const [editingDebt, setEditingDebt] = useState(null);
+  
+  const queryClient = useQueryClient();
 
   const { data: debts = [] } = useQuery({
     queryKey: ['debts'],
@@ -54,7 +59,13 @@ export default function Debt() {
               <Plus size={14} className="mr-1" />
               Asset
             </Button>
-            <Button className="bg-lime-500 text-black font-bold hover:bg-lime-400 h-9 sm:h-10 text-xs sm:text-sm px-2 sm:px-4">
+            <Button 
+              onClick={() => {
+                setEditingDebt(null);
+                setShowDebtForm(true);
+              }}
+              className="bg-lime-500 text-black font-bold hover:bg-lime-400 h-9 sm:h-10 text-xs sm:text-sm px-2 sm:px-4"
+            >
               <Plus size={14} className="mr-1" />
               Debt
             </Button>
@@ -74,7 +85,10 @@ export default function Debt() {
             <p className="text-gray-400 text-center text-sm max-w-sm mb-8 leading-relaxed">
               Either you're debt-free (congrats!) or you haven't added your debts yet. Be honest with yourself.
             </p>
-            <Button className="bg-lime-500 text-black font-bold hover:bg-lime-400 px-8 h-12">
+            <Button 
+              onClick={() => setShowDebtForm(true)}
+              className="bg-lime-500 text-black font-bold hover:bg-lime-400 px-8 h-12"
+            >
               <Plus size={20} className="mr-2" />
               Add Debt Account
             </Button>
@@ -87,6 +101,10 @@ export default function Debt() {
             {debts.map(debt => (
               <div
                 key={debt.id}
+                onClick={() => {
+                  setEditingDebt(debt);
+                  setShowDebtForm(true);
+                }}
                 className="bg-[#1a1a2e] border border-white/10 rounded-xl p-3 sm:p-4 hover:bg-[#252538] transition-colors cursor-pointer"
               >
                 <div className="flex items-center justify-between mb-2">
@@ -178,6 +196,22 @@ export default function Debt() {
           </div>
         </div>
       </div>
+
+      {/* Debt Form Modal */}
+      {showDebtForm && (
+        <DebtForm
+          debt={editingDebt}
+          onClose={() => {
+            setShowDebtForm(false);
+            setEditingDebt(null);
+          }}
+          onSuccess={() => {
+            queryClient.invalidateQueries({ queryKey: ['debts'] });
+            setShowDebtForm(false);
+            setEditingDebt(null);
+          }}
+        />
+      )}
     </div>
   );
 }
