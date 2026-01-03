@@ -65,6 +65,11 @@ export default function Bills() {
     return acc;
   }, {});
 
+  // Sort bills within each month by due date
+  Object.keys(billsByMonth).forEach(monthKey => {
+    billsByMonth[monthKey].sort((a, b) => a.due_date.localeCompare(b.due_date));
+  });
+
   // Sort months chronologically
   const sortedMonths = Object.keys(billsByMonth).sort();
 
