@@ -27,7 +27,6 @@ export default function Home() {
   const [showBillForm, setShowBillForm] = useState(false);
   const [showDebtForm, setShowDebtForm] = useState(false);
   const [showGoalForm, setShowGoalForm] = useState(false);
-  const [onboardingCompleted, setOnboardingCompleted] = useState(false);
 
   const { data: budgets = [], isLoading: budgetLoading, isFetching: budgetFetching } = useQuery({
     queryKey: ['userBudget'],
@@ -86,7 +85,7 @@ export default function Home() {
   const budget = budgets[0];
   const [saying] = useState(() => quirkySayings[Math.floor(Math.random() * quirkySayings.length)]);
 
-  if (budgetLoading || budgetFetching || onboardingCompleted) {
+  if (budgetLoading || budgetFetching) {
     return <SplashScreen />;
   }
 
@@ -191,13 +190,9 @@ export default function Home() {
   if (!budget) {
     return (
       <div className="min-h-screen bg-[#0d0d1a]">
-        <OnboardingFlow onComplete={async () => {
-        setOnboardingCompleted(true);
-        await queryClient.invalidateQueries({ queryKey: ['userBudget'] });
-        await queryClient.invalidateQueries({ queryKey: ['incomes'] });
-        await queryClient.refetchQueries({ queryKey: ['userBudget'] });
-        await queryClient.refetchQueries({ queryKey: ['incomes'] });
-        setOnboardingCompleted(false);
+        <OnboardingFlow onComplete={() => {
+        queryClient.invalidateQueries({ queryKey: ['userBudget'] });
+        queryClient.invalidateQueries({ queryKey: ['incomes'] });
       }} />
       </div>
     );
