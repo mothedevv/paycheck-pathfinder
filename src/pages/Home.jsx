@@ -84,6 +84,10 @@ export default function Home() {
   const budget = budgets[0];
   const [saying] = useState(() => quirkySayings[Math.floor(Math.random() * quirkySayings.length)]);
 
+  if (budgetLoading) {
+    return <div className="min-h-screen bg-[#0d0d1a]" />;
+  }
+
   // Calculate totals
   const totalBills = bills.reduce((sum, b) => sum + (b.amount || 0), 0);
   const totalAssets = assets.reduce((sum, a) => sum + (a.current_value || 0), 0);
@@ -396,7 +400,7 @@ export default function Home() {
                     </div>
                     <div className="text-center">
                       <p className="text-xs text-gray-500 mb-1">Frequency</p>
-                      <p className="text-sm font-semibold text-white capitalize">{payFrequency.replace('_', '-')}</p>
+                      <p className="text-sm font-semibold text-white capitalize">{primaryIncome.pay_frequency.replace('_', '-')}</p>
                     </div>
                   </div>
                 )}
