@@ -29,7 +29,34 @@ export default function BillForm({ bill, onClose, onSuccess }) {
       if (bill) {
         await base44.entities.Bill.update(bill.id, formData);
       } else {
-        await base44.entities.Bill.create(formData);
+        // Create bills for this month and next 6 months
+        const billsToCreate = [];
+        const [year, month, day] = formData.due_date.split('-').map(Number);
+        
+        for (let i = 0; i < 7; i++) {
+          const targetDate = new Date(year, month - 1 + i, day);
+          const yyyy = targetDate.getFullYear();
+          const mm = String(targetDate.getMonth() + 1).padStart(2, '0');
+          const dd = String(targetDate.getDate()).padStart(2, '0');
+          
+          let lateByDate = null;
+          if (formData.late_by_date) {
+            const [lateYear, lateMonth, lateDay] = formData.late_by_date.split('-').map(Number);
+            const lateDateObj = new Date(lateYear, lateMonth - 1 + i, lateDay);
+            const lateYYYY = lateDateObj.getFullYear();
+            const lateMM = String(lateDateObj.getMonth() + 1).padStart(2, '0');
+            const lateDD = String(lateDateObj.getDate()).padStart(2, '0');
+            lateByDate = `${lateYYYY}-${lateMM}-${lateDD}`;
+          }
+          
+          billsToCreate.push({
+            ...formData,
+            due_date: `${yyyy}-${mm}-${dd}`,
+            late_by_date: lateByDate
+          });
+        }
+        
+        await base44.entities.Bill.bulkCreate(billsToCreate);
       }
       onSuccess();
     } catch (error) {
