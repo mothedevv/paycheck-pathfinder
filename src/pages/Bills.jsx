@@ -154,13 +154,9 @@ export default function Bills() {
             {filteredBills.map(bill => (
               <div
                 key={bill.id}
-                onClick={() => {
-                  setEditingBill(bill);
-                  setShowBillForm(true);
-                }}
-                className="bg-[#1a1a2e] border border-white/10 rounded-xl p-3 sm:p-4 hover:bg-[#252538] transition-colors cursor-pointer"
-              >
-                <div className="flex items-center justify-between">
+                className="bg-[#1a1a2e] border border-white/10 rounded-xl p-3 sm:p-4 hover:bg-[#252538] transition-colors"
+                >
+                <div className="flex items-center justify-between mb-2">
                   <div className="flex-1 min-w-0 pr-2">
                     <h3 className="font-semibold text-white text-sm sm:text-base truncate">{bill.name}</h3>
                     <p className="text-xs sm:text-sm text-gray-400 capitalize truncate">
@@ -170,15 +166,84 @@ export default function Bills() {
                         return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
                       })()}
                     </p>
+                    {(() => {
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      const [y, m, d] = bill.due_date.split('-').map(Number);
+                      const dueDate = new Date(y, m - 1, d);
+                      const lateByDate = bill.late_by_date ? (() => {
+                        const [ly, lm, ld] = bill.late_by_date.split('-').map(Number);
+                        return new Date(ly, lm - 1, ld);
+                      })() : dueDate;
+
+                      if (!bill.last_paid_date && today > lateByDate) {
+                        return <p className="text-xs text-red-400 font-semibold mt-1">⚠ LATE</p>;
+                      }
+                      return null;
+                    })()}
                   </div>
                   <div className="text-right flex-shrink-0">
                     <p className="text-base sm:text-lg font-bold">${bill.amount.toFixed(2)}</p>
                     {bill.is_autopay && (
                       <p className="text-xs text-lime-400">Auto-pay</p>
                     )}
+                    {bill.last_paid_date && (
+                      <p className="text-xs text-green-400">✓ Paid</p>
+                    )}
                   </div>
                 </div>
-              </div>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditingBill(bill);
+                      setShowBillForm(true);
+                    }}
+                    className="flex-1 bg-white/5 hover:bg-white/10 text-white text-xs h-8"
+                  >
+                    Edit
+                  </Button>
+                  {!bill.last_paid_date ? (
+                    <Button
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        try {
+                          const today = new Date();
+                          const yyyy = today.getFullYear();
+                          const mm = String(today.getMonth() + 1).padStart(2, '0');
+                          const dd = String(today.getDate()).padStart(2, '0');
+                          await base44.entities.Bill.update(bill.id, {
+                            last_paid_date: `${yyyy}-${mm}-${dd}`
+                          });
+                          queryClient.invalidateQueries({ queryKey: ['bills'] });
+                        } catch (error) {
+                          console.error('Error marking bill as paid:', error);
+                        }
+                      }}
+                      className="flex-1 bg-lime-500/20 hover:bg-lime-500/30 text-lime-400 text-xs h-8"
+                    >
+                      Mark Paid
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        try {
+                          await base44.entities.Bill.update(bill.id, {
+                            last_paid_date: null
+                          });
+                          queryClient.invalidateQueries({ queryKey: ['bills'] });
+                        } catch (error) {
+                          console.error('Error unmarking bill:', error);
+                        }
+                      }}
+                      className="flex-1 bg-red-500/20 hover:bg-red-500/30 text-red-400 text-xs h-8"
+                    >
+                      Unmark
+                    </Button>
+                  )}
+                </div>
+                </div>
             ))}
           </div>
         )}

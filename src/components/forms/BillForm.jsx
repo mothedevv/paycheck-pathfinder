@@ -100,6 +100,18 @@ export default function BillForm({ bill, onClose, onSuccess }) {
           </div>
 
           <div>
+            <Label>Late By Date (Optional)</Label>
+            <Input
+              type="date"
+              value={formData.late_by_date}
+              onChange={(e) => setFormData({ ...formData, late_by_date: e.target.value })}
+              className="bg-white/10 border-white/20 text-white"
+              placeholder="Grace period end date"
+            />
+            <p className="text-xs text-gray-400 mt-1">Last day to pay without being late</p>
+          </div>
+
+          <div>
             <Label>Category</Label>
             <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
               <SelectTrigger className="bg-white/10 border-white/20 text-white">
