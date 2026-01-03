@@ -117,7 +117,7 @@ export default function OnboardingFlow({ onComplete }) {
       onComplete();
     } catch (error) {
       console.error('Error creating budget:', error);
-    } finally {
+      alert('There was an error setting up your budget. Please try again.');
       setLoading(false);
     }
   };
