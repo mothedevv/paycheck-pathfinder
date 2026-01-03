@@ -27,7 +27,30 @@ export default function BillForm({ bill, onClose, onSuccess }) {
 
     try {
       if (bill) {
-        await base44.entities.Bill.update(bill.id, formData);
+        // Update this bill and all other instances with the same name
+        const currentUser = await base44.auth.me();
+        const allBills = await base44.entities.Bill.filter({ created_by: currentUser.email });
+        const relatedBills = allBills.filter(b => b.name === bill.name);
+        
+        // Update all related bills with shared properties
+        const updatePromises = relatedBills.map(b => 
+          base44.entities.Bill.update(b.id, {
+            name: formData.name,
+            amount: formData.amount,
+            is_variable: formData.is_variable,
+            category: formData.category,
+            subcategory: formData.subcategory,
+            is_autopay: formData.is_autopay,
+            frequency: formData.frequency,
+            notes: formData.notes,
+            // Keep the original due_date and late_by_date for each instance
+            due_date: b.due_date,
+            late_by_date: b.late_by_date,
+            last_paid_date: b.last_paid_date
+          })
+        );
+        
+        await Promise.all(updatePromises);
       } else {
         // Create bills for this month and next 6 months
         const billsToCreate = [];
@@ -156,6 +179,24 @@ export default function BillForm({ bill, onClose, onSuccess }) {
                 <SelectItem value="taxes">Taxes</SelectItem>
                 <SelectItem value="furniture_rental">Furniture/Rental</SelectItem>
                 <SelectItem value="other">Other</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label>Frequency</Label>
+            <Select value={formData.frequency} onValueChange={(value) => setFormData({ ...formData, frequency: value })}>
+              <SelectTrigger className="bg-white/10 border-white/20 text-white">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="monthly">Monthly</SelectItem>
+                <SelectItem value="weekly">Weekly</SelectItem>
+                <SelectItem value="biweekly">Bi-weekly</SelectItem>
+                <SelectItem value="quarterly">Quarterly</SelectItem>
+                <SelectItem value="biannually">Bi-annually</SelectItem>
+                <SelectItem value="annually">Annually</SelectItem>
+                <SelectItem value="one_time">One-time</SelectItem>
               </SelectContent>
             </Select>
           </div>
