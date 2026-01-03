@@ -85,6 +85,10 @@ export default function Home() {
   const budget = budgets[0];
   const [saying] = useState(() => quirkySayings[Math.floor(Math.random() * quirkySayings.length)]);
 
+  if (budgetLoading) {
+    return <SplashScreen />;
+  }
+
   // Calculate totals
   const totalBills = bills.reduce((sum, b) => sum + (b.amount || 0), 0);
   const totalAssets = assets.reduce((sum, a) => sum + (a.current_value || 0), 0);
@@ -182,10 +186,6 @@ export default function Home() {
   const primaryIncome = incomes.find(i => i.is_primary) || incomes[0];
   const nextPayday = primaryIncome?.next_payday;
   const expectedAmount = primaryIncome?.paycheck_amount || 0;
-
-  if (budgetLoading) {
-    return <SplashScreen />;
-  }
 
   if (!budget) {
     return (
