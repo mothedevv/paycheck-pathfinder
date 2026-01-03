@@ -69,21 +69,43 @@ export default function DebtForm({ debt, onClose, onSuccess }) {
         if (dueDate < today) {
           dueDate.setMonth(dueDate.getMonth() + 1);
         }
-        const dueDateStr = `${dueDate.getFullYear()}-${String(dueDate.getMonth() + 1).padStart(2, '0')}-${String(dueDate.getDate()).padStart(2, '0')}`;
 
-        const billData = {
-          name: `${formData.name} Payment`,
-          amount: dataToSubmit.minimum_payment,
-          due_date: dueDateStr,
-          category: 'debt_payments',
-          frequency: 'monthly',
-          notes: `Auto-generated from debt: ${formData.name}`
-        };
-
-        if (existingBills.length > 0) {
-          await base44.entities.Bill.update(existingBills[0].id, billData);
+        if (debt) {
+          // Update existing bills with same name
+          const relatedBills = await base44.entities.Bill.filter({ 
+            created_by: currentUser.email,
+            name: `${formData.name} Payment`
+          });
+          
+          const updatePromises = relatedBills.map(b => 
+            base44.entities.Bill.update(b.id, {
+              amount: dataToSubmit.minimum_payment,
+              category: 'debt_payments',
+              frequency: 'monthly',
+              notes: `Auto-generated from debt: ${formData.name}`
+            })
+          );
+          
+          await Promise.all(updatePromises);
         } else {
-          await base44.entities.Bill.create(billData);
+          // Create bills for this month and next 6 months
+          const billsToCreate = [];
+          
+          for (let i = 0; i < 7; i++) {
+            const targetDate = new Date(dueDate.getFullYear(), dueDate.getMonth() + i, dueDay);
+            const dueDateStr = `${targetDate.getFullYear()}-${String(targetDate.getMonth() + 1).padStart(2, '0')}-${String(targetDate.getDate()).padStart(2, '0')}`;
+            
+            billsToCreate.push({
+              name: `${formData.name} Payment`,
+              amount: dataToSubmit.minimum_payment,
+              due_date: dueDateStr,
+              category: 'debt_payments',
+              frequency: 'monthly',
+              notes: `Auto-generated from debt: ${formData.name}`
+            });
+          }
+          
+          await base44.entities.Bill.bulkCreate(billsToCreate);
         }
       }
 
@@ -97,19 +119,19 @@ export default function DebtForm({ debt, onClose, onSuccess }) {
   };
 
   const handleDelete = async () => {
-    if (!debt || !confirm('Delete this debt? This will also remove the associated bill payment.')) return;
+    if (!debt || !confirm('Delete this debt? This will also remove all associated bill payments.')) return;
 
     setLoading(true);
     try {
-      // Delete associated bill
+      // Delete all associated bills
       const currentUser = await base44.auth.me();
       const existingBills = await base44.entities.Bill.filter({ 
         created_by: currentUser.email,
         name: `${debt.name} Payment`
       });
-      if (existingBills.length > 0) {
-        await base44.entities.Bill.delete(existingBills[0].id);
-      }
+      
+      const deletePromises = existingBills.map(bill => base44.entities.Bill.delete(bill.id));
+      await Promise.all(deletePromises);
 
       await base44.entities.Debt.delete(debt.id);
       onSuccess();
