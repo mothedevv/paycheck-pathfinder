@@ -54,6 +54,20 @@ export default function Bills() {
     return matchesSearch && matchesCategory;
   });
 
+  // Group bills by month
+  const billsByMonth = filteredBills.reduce((acc, bill) => {
+    const [y, m] = bill.due_date.split('-').map(Number);
+    const monthKey = `${y}-${String(m).padStart(2, '0')}`;
+    if (!acc[monthKey]) {
+      acc[monthKey] = [];
+    }
+    acc[monthKey].push(bill);
+    return acc;
+  }, {});
+
+  // Sort months chronologically
+  const sortedMonths = Object.keys(billsByMonth).sort();
+
   return (
     <div className="min-h-screen bg-[#0d0d1a] text-white pb-24">
       <div className="max-w-lg mx-auto px-4 py-4 sm:py-6">
@@ -151,8 +165,17 @@ export default function Bills() {
             </p>
           </div>
         ) : (
-          <div className="mt-4 sm:mt-6 space-y-2 sm:space-y-3">
-            {filteredBills.map(bill => (
+          <div className="mt-4 sm:mt-6 space-y-6">
+            {sortedMonths.map(monthKey => {
+              const [year, month] = monthKey.split('-').map(Number);
+              const monthDate = new Date(year, month - 1, 1);
+              const monthName = monthDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+              return (
+                <div key={monthKey}>
+                  <h2 className="text-lg sm:text-xl font-bold mb-3 text-lime-400">{monthName}</h2>
+                  <div className="space-y-2 sm:space-y-3">
+                    {billsByMonth[monthKey].map(bill => (
               <div
                 key={bill.id}
                 className={(() => {
@@ -242,12 +265,16 @@ export default function Bills() {
                           )}
                         </DropdownMenuContent>
                       </DropdownMenu>
-                    </div>
-                  </div>
-                </div>
-            ))}
-          </div>
-        )}
+                      </div>
+                      </div>
+                      </div>
+                          ))}
+                        </div>
+                      </div>
+                      );
+                      })}
+                      </div>
+                      )}
       </div>
 
       {/* Bottom Navigation */}
