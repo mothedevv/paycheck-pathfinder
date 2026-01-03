@@ -9,7 +9,6 @@ import IncomeForm from '@/components/forms/IncomeForm';
 import BillForm from '@/components/forms/BillForm';
 import DebtForm from '@/components/forms/DebtForm';
 import SavingsGoalForm from '@/components/forms/SavingsGoalForm';
-import SplashScreen from '@/components/SplashScreen';
 
 const quirkySayings = [
   "Rich people budget. Coincidence? I think not.",
@@ -83,10 +82,6 @@ export default function Home() {
 
   const budget = budgets[0];
   const [saying] = useState(() => quirkySayings[Math.floor(Math.random() * quirkySayings.length)]);
-
-  if (budgetLoading || budgetFetching) {
-    return <SplashScreen />;
-  }
 
   // Calculate totals
   const totalBills = bills.reduce((sum, b) => sum + (b.amount || 0), 0);
