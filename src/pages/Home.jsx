@@ -26,7 +26,7 @@ export default function Home() {
   const [showDebtForm, setShowDebtForm] = useState(false);
   const [showGoalForm, setShowGoalForm] = useState(false);
 
-  const { data: budgets = [], isLoading: budgetLoading, isFetching: budgetFetching } = useQuery({
+  const { data: budgets = [] } = useQuery({
     queryKey: ['userBudget'],
     queryFn: async () => {
       const currentUser = await base44.auth.me();
