@@ -154,7 +154,22 @@ export default function Bills() {
             {filteredBills.map(bill => (
               <div
                 key={bill.id}
-                className="bg-[#1a1a2e] border border-white/10 rounded-xl p-3 sm:p-4 hover:bg-[#252538] transition-colors"
+                className={(() => {
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0);
+                  const [y, m, d] = bill.due_date.split('-').map(Number);
+                  const dueDate = new Date(y, m - 1, d);
+                  const lateByDate = bill.late_by_date ? (() => {
+                    const [ly, lm, ld] = bill.late_by_date.split('-').map(Number);
+                    return new Date(ly, lm - 1, ld);
+                  })() : dueDate;
+
+                  const isLate = !bill.last_paid_date && today > lateByDate;
+
+                  return isLate 
+                    ? "bg-red-900/30 border border-red-500/50 rounded-xl p-3 sm:p-4 hover:bg-red-900/40 transition-colors"
+                    : "bg-[#1a1a2e] border border-white/10 rounded-xl p-3 sm:p-4 hover:bg-[#252538] transition-colors";
+                })()}
                 >
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex-1 min-w-0 pr-2">
@@ -166,21 +181,6 @@ export default function Bills() {
                         return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
                       })()}
                     </p>
-                    {(() => {
-                      const today = new Date();
-                      today.setHours(0, 0, 0, 0);
-                      const [y, m, d] = bill.due_date.split('-').map(Number);
-                      const dueDate = new Date(y, m - 1, d);
-                      const lateByDate = bill.late_by_date ? (() => {
-                        const [ly, lm, ld] = bill.late_by_date.split('-').map(Number);
-                        return new Date(ly, lm - 1, ld);
-                      })() : dueDate;
-
-                      if (!bill.last_paid_date && today > lateByDate) {
-                        return <p className="text-xs text-red-400 font-semibold mt-1">⚠ LATE</p>;
-                      }
-                      return null;
-                    })()}
                   </div>
                   <div className="text-right flex-shrink-0">
                     <p className="text-base sm:text-lg font-bold">${bill.amount.toFixed(2)}</p>
