@@ -26,13 +26,14 @@ export default function Home() {
   const [showDebtForm, setShowDebtForm] = useState(false);
   const [showGoalForm, setShowGoalForm] = useState(false);
 
-  const { data: budgets = [] } = useQuery({
+  const { data: budgets = [], isLoading: budgetLoading } = useQuery({
     queryKey: ['userBudget'],
     queryFn: async () => {
       const currentUser = await base44.auth.me();
       return base44.entities.UserBudget.filter({ created_by: currentUser.email });
     },
-    refetchOnWindowFocus: false
+    refetchOnWindowFocus: false,
+    staleTime: Infinity
   });
 
   const { data: bills = [] } = useQuery({
