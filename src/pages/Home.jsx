@@ -4,7 +4,6 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
 import { Settings, Plus, ArrowRight, Receipt, CreditCard, PiggyBank, Calendar } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/utils';
 import OnboardingFlow from '@/components/onboarding/OnboardingFlow';
 import IncomeForm from '@/components/forms/IncomeForm';
 import BillForm from '@/components/forms/BillForm';
@@ -207,7 +206,7 @@ export default function Home() {
             <h1 className="text-2xl sm:text-3xl font-black leading-tight">Your Money Dashboard</h1>
             <p className="text-lime-400 italic text-xs sm:text-sm mt-1">"{saying}"</p>
           </div>
-          <Link to={createPageUrl('Settings')}>
+          <Link to="/settings">
             <Button 
               className="bg-[#1a1a2e] border border-white/20 text-white hover:bg-[#252538] flex items-center gap-1 text-xs sm:text-sm h-9 sm:h-10 px-2 sm:px-4 font-semibold"
             >
@@ -285,7 +284,7 @@ export default function Home() {
         {/* Stats Grid */}
         <div className="grid grid-cols-2 gap-3 sm:gap-4 mt-4 sm:mt-6">
           {/* Monthly Bills */}
-          <Link to={createPageUrl('Bills')}>
+          <Link to="/bills">
             <div className="bg-[#1a1a2e] border border-white/10 rounded-xl sm:rounded-2xl p-3 sm:p-5 hover:bg-[#252538] transition-colors cursor-pointer">
               <div className="flex flex-col items-center text-center">
                 <div className="p-1.5 sm:p-2 rounded-lg bg-pink-500/20 mb-2">
@@ -299,7 +298,7 @@ export default function Home() {
           </Link>
 
           {/* Assets */}
-          <Link to={createPageUrl('Debt')}>
+          <Link to="/debt">
             <div className="bg-[#1a1a2e] border border-white/10 rounded-xl sm:rounded-2xl p-3 sm:p-5 hover:bg-[#252538] transition-colors cursor-pointer">
               <div className="flex flex-col items-center text-center">
                 <div className="p-1.5 sm:p-2 rounded-lg bg-emerald-500/20 mb-2">
@@ -346,7 +345,7 @@ export default function Home() {
             };
 
             return (
-              <Link key={category.type} to={createPageUrl('Debt')}>
+              <Link key={category.type} to="/debt">
                 <div className="bg-[#1a1a2e] border border-white/10 rounded-xl sm:rounded-2xl p-3 sm:p-5 hover:bg-[#252538] transition-colors cursor-pointer">
                   <div className="flex flex-col items-center text-center">
                     <div className={`p-1.5 sm:p-2 rounded-lg ${colorClasses[category.color].bg} mb-2`}>
@@ -364,7 +363,7 @@ export default function Home() {
             })}
 
           {/* Savings Goals */}
-          <Link to={createPageUrl('Savings')}>
+          <Link to="/savings">
             <div className="bg-[#1a1a2e] border border-white/10 rounded-xl sm:rounded-2xl p-3 sm:p-5 hover:bg-[#252538] transition-colors cursor-pointer">
               <div className="flex flex-col items-center text-center">
                 <div className="p-1.5 sm:p-2 rounded-lg bg-lime-500/20 mb-2">
@@ -436,7 +435,7 @@ export default function Home() {
             <Plus size={16} className="mr-1 sm:mr-2" />
             Add Goal
           </Button>
-          <Link to={createPageUrl('Payday')}>
+          <Link to="/payday">
             <Button className="w-full h-12 sm:h-14 bg-lime-500 text-black font-bold hover:bg-lime-400 text-sm sm:text-base">
               Plan Payday
               <ArrowRight size={16} className="ml-1 sm:ml-2" />
@@ -449,7 +448,7 @@ export default function Home() {
       <div className="fixed bottom-0 left-0 right-0 bg-[#1a1a2e] border-t border-white/10">
         <div className="max-w-lg mx-auto px-4 py-3">
           <div className="flex items-center justify-around">
-            <Link to={createPageUrl('Home')} className="flex flex-col items-center gap-1">
+            <Link to="/" className="flex flex-col items-center gap-1">
               <div className="text-lime-400">
                 <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
@@ -458,22 +457,22 @@ export default function Home() {
               <span className="text-xs text-lime-400 font-semibold">Dashboard</span>
             </Link>
 
-            <Link to={createPageUrl('Bills')} className="flex flex-col items-center gap-1">
+            <Link to="/bills" className="flex flex-col items-center gap-1">
               <Receipt className="w-6 h-6 text-gray-400" />
               <span className="text-xs text-gray-400">Bills</span>
             </Link>
 
-            <Link to={createPageUrl('Debt')} className="flex flex-col items-center gap-1">
+            <Link to="/debt" className="flex flex-col items-center gap-1">
               <CreditCard className="w-6 h-6 text-gray-400" />
               <span className="text-xs text-gray-400">Debt</span>
             </Link>
 
-            <Link to={createPageUrl('Savings')} className="flex flex-col items-center gap-1">
+            <Link to="/savings" className="flex flex-col items-center gap-1">
               <PiggyBank className="w-6 h-6 text-gray-400" />
               <span className="text-xs text-gray-400">Savings</span>
             </Link>
 
-            <Link to={createPageUrl('Payday')} className="flex flex-col items-center gap-1">
+            <Link to="/payday" className="flex flex-col items-center gap-1">
               <Calendar className="w-6 h-6 text-gray-400" />
               <span className="text-xs text-gray-400">Payday</span>
             </Link>
