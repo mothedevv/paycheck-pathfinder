@@ -82,21 +82,21 @@ export default function Bills() {
         <p className="text-lime-400 italic text-xs sm:text-sm ml-11 sm:ml-14">"{saying}"</p>
 
         {/* Total Bills Card */}
-        <div className="bg-gradient-to-br from-pink-900/40 to-pink-950/20 border border-pink-800/30 rounded-xl sm:rounded-2xl p-4 sm:p-6 mt-4 sm:mt-6">
+        <div className="bg-gradient-to-br from-blue-900/40 to-blue-950/20 border border-blue-800/30 rounded-xl sm:rounded-2xl p-4 sm:p-6 mt-4 sm:mt-6">
           <div className="flex items-start justify-between mb-3 sm:mb-4">
             <div>
-              <p className="text-xs sm:text-sm text-pink-200/60 uppercase tracking-wider mb-2">Total Monthly Bills</p>
+              <p className="text-xs sm:text-sm text-blue-200/60 uppercase tracking-wider mb-2">Total Monthly Bills</p>
               <p className="text-3xl sm:text-5xl font-black mb-1">${totalBills.toFixed(2)}</p>
-              <p className="text-xs sm:text-sm text-pink-200/60">{bills.length} bills tracked</p>
+              <p className="text-xs sm:text-sm text-blue-200/60">{bills.length} bills tracked</p>
             </div>
-            <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-pink-800/40">
-              <Receipt size={24} className="text-pink-300 sm:w-8 sm:h-8" />
+            <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-blue-800/40">
+              <Receipt size={24} className="text-blue-300 sm:w-8 sm:h-8" />
             </div>
           </div>
-          
-          <div className="border-t border-pink-800/30 pt-3 sm:pt-4 mt-3 sm:mt-4">
+
+          <div className="border-t border-blue-800/30 pt-3 sm:pt-4 mt-3 sm:mt-4">
             <div className="flex items-center justify-between">
-              <span className="text-xs sm:text-sm text-pink-200/80">Bills Allocation ({budget?.bills_percentage || 50}%)</span>
+              <span className="text-xs sm:text-sm text-blue-200/80">Bills Allocation ({budget?.bills_percentage || 50}%)</span>
               <span className="text-base sm:text-lg font-bold">${billsAllocation.toFixed(2)}/mo</span>
             </div>
           </div>
