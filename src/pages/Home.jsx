@@ -28,7 +28,7 @@ export default function Home() {
   const [showDebtForm, setShowDebtForm] = useState(false);
   const [showGoalForm, setShowGoalForm] = useState(false);
 
-  const { data: budgets = [], isLoading: budgetLoading } = useQuery({
+  const { data: budgets = [], isLoading: budgetLoading, isFetching: budgetFetching } = useQuery({
     queryKey: ['userBudget'],
     queryFn: async () => {
       const currentUser = await base44.auth.me();
@@ -85,7 +85,7 @@ export default function Home() {
   const budget = budgets[0];
   const [saying] = useState(() => quirkySayings[Math.floor(Math.random() * quirkySayings.length)]);
 
-  if (budgetLoading) {
+  if (budgetLoading || budgetFetching) {
     return <SplashScreen />;
   }
 
