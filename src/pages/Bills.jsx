@@ -23,6 +23,7 @@ export default function Bills() {
   const [saying] = useState(() => quirkySayings[Math.floor(Math.random() * quirkySayings.length)]);
   const [showBillForm, setShowBillForm] = useState(false);
   const [editingBill, setEditingBill] = useState(null);
+  const [viewingBill, setViewingBill] = useState(null);
   
   const queryClient = useQueryClient();
 
@@ -181,36 +182,42 @@ export default function Bills() {
                   <h2 className="text-lg sm:text-xl font-bold mb-3 text-lime-400">{monthName}</h2>
                   <div className="space-y-2 sm:space-y-3">
                     {billsByMonth[monthKey].map(bill => (
-              <div
-                key={bill.id}
-                className={(() => {
-                  const today = new Date();
-                  today.setHours(0, 0, 0, 0);
-                  const [y, m, d] = bill.due_date.split('-').map(Number);
-                  const dueDate = new Date(y, m - 1, d);
-                  const lateByDate = bill.late_by_date ? (() => {
+                    <div
+                    key={bill.id}
+                    onClick={() => setViewingBill(bill)}
+                    className={(() => {
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const [y, m, d] = bill.due_date.split('-').map(Number);
+                    const dueDate = new Date(y, m - 1, d);
+                    const lateByDate = bill.late_by_date ? (() => {
                     const [ly, lm, ld] = bill.late_by_date.split('-').map(Number);
                     return new Date(ly, lm - 1, ld);
-                  })() : dueDate;
+                    })() : dueDate;
 
-                  const isLate = !bill.last_paid_date && today > lateByDate;
+                    const isLate = !bill.last_paid_date && today > lateByDate;
 
-                  return isLate 
-                    ? "bg-red-900/30 border border-red-500/50 rounded-xl p-3 sm:p-4 hover:bg-red-900/40 transition-colors"
-                    : "bg-[#1a1a2e] border border-white/10 rounded-xl p-3 sm:p-4 hover:bg-[#252538] transition-colors";
-                })()}
-                >
+                    return isLate 
+                    ? "bg-red-900/30 border border-red-500/50 rounded-xl p-3 sm:p-4 hover:bg-red-900/40 transition-colors cursor-pointer"
+                    : "bg-[#1a1a2e] border border-white/10 rounded-xl p-3 sm:p-4 hover:bg-[#252538] transition-colors cursor-pointer";
+                    })()}
+                    >
                   <div className="flex items-center justify-between">
-                    <div className="flex-1 min-w-0 pr-2">
-                      <h3 className="font-semibold text-white text-sm sm:text-base truncate">{bill.name}</h3>
-                      <p className="text-xs sm:text-sm text-gray-400 capitalize truncate">
-                        {bill.category?.replace('_', ' ')} • Due {(() => {
-                          const [y, m, d] = bill.due_date.split('-').map(Number);
-                          const date = new Date(y, m - 1, d);
-                          return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                        })()}
-                      </p>
-                    </div>
+                  <div className="flex-1 min-w-0 pr-2">
+                  <h3 className="font-semibold text-white text-sm sm:text-base truncate">{bill.name}</h3>
+                  <p className="text-xs sm:text-sm text-gray-400 capitalize truncate">
+                    {bill.category?.replace('_', ' ')} • Due {(() => {
+                      const [y, m, d] = bill.due_date.split('-').map(Number);
+                      const date = new Date(y, m - 1, d);
+                      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    })()}
+                    {bill.late_by_date && (() => {
+                      const [y, m, d] = bill.late_by_date.split('-').map(Number);
+                      const date = new Date(y, m - 1, d);
+                      return ` • Late by ${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+                    })()}
+                  </p>
+                  </div>
                     <div className="text-right flex-shrink-0 flex items-center gap-2">
                       <div>
                         <p className="text-base sm:text-lg font-bold">${bill.amount.toFixed(2)}</p>
@@ -223,12 +230,18 @@ export default function Bills() {
                       </div>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-white hover:bg-white/10">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8 text-gray-400 hover:text-white hover:bg-white/10"
+                            onClick={(e) => e.stopPropagation()}
+                          >
                             <MoreVertical size={16} />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => {
+                          <DropdownMenuItem onClick={(e) => {
+                            e.stopPropagation();
                             setEditingBill(bill);
                             setShowBillForm(true);
                           }}>
@@ -236,7 +249,8 @@ export default function Bills() {
                             Edit
                           </DropdownMenuItem>
                           {!bill.last_paid_date ? (
-                            <DropdownMenuItem onClick={async () => {
+                            <DropdownMenuItem onClick={async (e) => {
+                              e.stopPropagation();
                               try {
                                 const today = new Date();
                                 const yyyy = today.getFullYear();
@@ -254,7 +268,8 @@ export default function Bills() {
                               Mark as Paid
                             </DropdownMenuItem>
                           ) : (
-                            <DropdownMenuItem onClick={async () => {
+                            <DropdownMenuItem onClick={async (e) => {
+                              e.stopPropagation();
                               try {
                                 await base44.entities.Bill.update(bill.id, {
                                   last_paid_date: null
@@ -328,6 +343,109 @@ export default function Bills() {
         </div>
       </div>
 
+      {/* Bill Detail Modal */}
+      {viewingBill && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+          <div className="bg-[#1a1a2e] border border-white/10 rounded-xl max-w-md w-full p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold">{viewingBill.name}</h2>
+              <Button variant="ghost" size="icon" onClick={() => setViewingBill(null)}>
+                <X size={20} />
+              </Button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <p className="text-xs text-gray-400 mb-1">Amount</p>
+                <p className="text-2xl font-bold text-white">${viewingBill.amount.toFixed(2)}</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-xs text-gray-400 mb-1">Due Date</p>
+                  <p className="text-sm font-semibold text-white">
+                    {(() => {
+                      const [y, m, d] = viewingBill.due_date.split('-').map(Number);
+                      const date = new Date(y, m - 1, d);
+                      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                    })()}
+                  </p>
+                </div>
+
+                {viewingBill.late_by_date && (
+                  <div>
+                    <p className="text-xs text-gray-400 mb-1">Late By Date</p>
+                    <p className="text-sm font-semibold text-orange-400">
+                      {(() => {
+                        const [y, m, d] = viewingBill.late_by_date.split('-').map(Number);
+                        const date = new Date(y, m - 1, d);
+                        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                      })()}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <p className="text-xs text-gray-400 mb-1">Category</p>
+                <p className="text-sm font-semibold text-white capitalize">{viewingBill.category?.replace('_', ' ')}</p>
+              </div>
+
+              <div>
+                <p className="text-xs text-gray-400 mb-1">Frequency</p>
+                <p className="text-sm font-semibold text-white capitalize">{viewingBill.frequency?.replace('_', '-')}</p>
+              </div>
+
+              {viewingBill.is_autopay && (
+                <div className="bg-lime-500/10 border border-lime-500/30 rounded-lg p-3">
+                  <p className="text-sm text-lime-400 font-semibold">✓ Auto-pay enabled</p>
+                </div>
+              )}
+
+              {viewingBill.last_paid_date && (
+                <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3">
+                  <p className="text-xs text-gray-400 mb-1">Paid On</p>
+                  <p className="text-sm text-green-400 font-semibold">
+                    {(() => {
+                      const [y, m, d] = viewingBill.last_paid_date.split('-').map(Number);
+                      const date = new Date(y, m - 1, d);
+                      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                    })()}
+                  </p>
+                </div>
+              )}
+
+              {viewingBill.notes && (
+                <div>
+                  <p className="text-xs text-gray-400 mb-1">Notes</p>
+                  <p className="text-sm text-gray-300">{viewingBill.notes}</p>
+                </div>
+              )}
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <Button
+                onClick={() => {
+                  setViewingBill(null);
+                  setEditingBill(viewingBill);
+                  setShowBillForm(true);
+                }}
+                className="flex-1 bg-white/10 border border-white/20 text-white hover:bg-white/20"
+              >
+                <Edit size={16} className="mr-2" />
+                Edit
+              </Button>
+              <Button
+                onClick={() => setViewingBill(null)}
+                className="flex-1 bg-lime-500 text-black font-bold hover:bg-lime-400"
+              >
+                Close
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Bill Form Modal */}
       {showBillForm && (
         <BillForm
@@ -343,6 +461,6 @@ export default function Bills() {
           }}
         />
       )}
-    </div>
-  );
-}
+      </div>
+      );
+      }
