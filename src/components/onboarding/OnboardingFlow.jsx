@@ -114,6 +114,9 @@ export default function OnboardingFlow({ onComplete }) {
         });
       }
 
+      // Wait a moment to ensure data is committed
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
       onComplete();
     } catch (error) {
       console.error('Error creating budget:', error);
