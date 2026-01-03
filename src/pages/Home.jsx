@@ -190,7 +190,10 @@ export default function Home() {
   if (!budget) {
     return (
       <div className="min-h-screen bg-[#0d0d1a]">
-        <OnboardingFlow onComplete={() => queryClient.invalidateQueries({ queryKey: ['userBudget'] })} />
+        <OnboardingFlow onComplete={async () => {
+        await queryClient.invalidateQueries({ queryKey: ['userBudget'] });
+        await queryClient.refetchQueries({ queryKey: ['userBudget'] });
+      }} />
       </div>
     );
   }
