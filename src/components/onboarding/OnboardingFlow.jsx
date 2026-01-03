@@ -273,8 +273,7 @@ export default function OnboardingFlow({ onComplete }) {
               <div className="flex gap-3">
                 <Button
                   onClick={() => setStep(1)}
-                  variant="outline"
-                  className="border-white/20 text-white hover:bg-white/10 h-12"
+                  className="bg-[#252538] border border-white/20 text-white hover:bg-[#1a1a2e] h-12"
                 >
                   Back
                 </Button>
@@ -323,8 +322,7 @@ export default function OnboardingFlow({ onComplete }) {
               <div className="flex gap-3">
                 <Button
                   onClick={() => setStep(2)}
-                  variant="outline"
-                  className="border-white/20 text-white hover:bg-white/10 h-12"
+                  className="bg-[#252538] border border-white/20 text-white hover:bg-[#1a1a2e] h-12"
                 >
                   Back
                 </Button>
@@ -373,8 +371,7 @@ export default function OnboardingFlow({ onComplete }) {
               <div className="flex gap-3">
                 <Button
                   onClick={() => setStep(3)}
-                  variant="outline"
-                  className="border-white/20 text-white hover:bg-white/10 h-12"
+                  className="bg-[#252538] border border-white/20 text-white hover:bg-[#1a1a2e] h-12"
                 >
                   Back
                 </Button>
