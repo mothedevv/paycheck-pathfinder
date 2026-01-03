@@ -29,63 +29,57 @@ export default function Home() {
   const [showGoalForm, setShowGoalForm] = useState(false);
   const [onboardingCompleted, setOnboardingCompleted] = useState(false);
 
-  const { data: user } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
-    refetchOnWindowFocus: false
-  });
-
   const { data: budgets = [], isLoading: budgetLoading, isFetching: budgetFetching } = useQuery({
-    queryKey: ['userBudget', user?.email],
+    queryKey: ['userBudget'],
     queryFn: async () => {
-      return base44.entities.UserBudget.filter({ created_by: user.email });
+      const currentUser = await base44.auth.me();
+      return base44.entities.UserBudget.filter({ created_by: currentUser.email });
     },
-    enabled: !!user,
     refetchOnWindowFocus: false
   });
 
   const { data: bills = [] } = useQuery({
-    queryKey: ['bills', user?.email],
+    queryKey: ['bills'],
     queryFn: async () => {
-      return base44.entities.Bill.filter({ created_by: user.email });
+      const currentUser = await base44.auth.me();
+      return base44.entities.Bill.filter({ created_by: currentUser.email });
     },
-    enabled: !!user,
     refetchOnWindowFocus: false
   });
 
   const { data: debts = [] } = useQuery({
-    queryKey: ['debts', user?.email],
+    queryKey: ['debts'],
     queryFn: async () => {
-      return base44.entities.Debt.filter({ created_by: user.email });
+      const currentUser = await base44.auth.me();
+      return base44.entities.Debt.filter({ created_by: currentUser.email });
     },
-    enabled: !!user,
     refetchOnWindowFocus: false
   });
 
   const { data: savingsGoals = [] } = useQuery({
-    queryKey: ['savingsGoals', user?.email],
+    queryKey: ['savingsGoals'],
     queryFn: async () => {
-      return base44.entities.SavingsGoal.filter({ created_by: user.email });
+      const currentUser = await base44.auth.me();
+      return base44.entities.SavingsGoal.filter({ created_by: currentUser.email });
     },
-    enabled: !!user,
     refetchOnWindowFocus: false
   });
 
   const { data: incomes = [] } = useQuery({
-    queryKey: ['incomes', user?.email],
+    queryKey: ['incomes'],
     queryFn: async () => {
-      return base44.entities.Income.filter({ created_by: user.email });
+      const currentUser = await base44.auth.me();
+      return base44.entities.Income.filter({ created_by: currentUser.email });
     },
-    enabled: !!user,
     refetchOnWindowFocus: false
   });
 
   const { data: assets = [] } = useQuery({
-    queryKey: ['assets', user?.email],
+    queryKey: ['assets'],
     queryFn: async () => {
-      return base44.entities.Asset.filter({ created_by: user.email });
+      const currentUser = await base44.auth.me();
+      return base44.entities.Asset.filter({ created_by: currentUser.email });
     },
-    enabled: !!user,
     refetchOnWindowFocus: false
   });
 
@@ -199,10 +193,10 @@ export default function Home() {
       <div className="min-h-screen bg-[#0d0d1a]">
         <OnboardingFlow onComplete={async () => {
         setOnboardingCompleted(true);
-        await queryClient.invalidateQueries({ queryKey: ['userBudget', user?.email] });
-        await queryClient.invalidateQueries({ queryKey: ['incomes', user?.email] });
-        await queryClient.refetchQueries({ queryKey: ['userBudget', user?.email] });
-        await queryClient.refetchQueries({ queryKey: ['incomes', user?.email] });
+        await queryClient.invalidateQueries({ queryKey: ['userBudget'] });
+        await queryClient.invalidateQueries({ queryKey: ['incomes'] });
+        await queryClient.refetchQueries({ queryKey: ['userBudget'] });
+        await queryClient.refetchQueries({ queryKey: ['incomes'] });
         setOnboardingCompleted(false);
       }} />
       </div>
