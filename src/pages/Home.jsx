@@ -192,7 +192,9 @@ export default function Home() {
       <div className="min-h-screen bg-[#0d0d1a]">
         <OnboardingFlow onComplete={async () => {
         await queryClient.invalidateQueries({ queryKey: ['userBudget'] });
+        await queryClient.invalidateQueries({ queryKey: ['incomes'] });
         await queryClient.refetchQueries({ queryKey: ['userBudget'] });
+        await queryClient.refetchQueries({ queryKey: ['incomes'] });
       }} />
       </div>
     );
